@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>卡纳酒吧巅峰赛 - Canary Bar Championship</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow-x: hidden; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const defaultLevels = [
+      { smallBlind: 25, bigBlind: 50, ante: 0, duration: 20 },
+      { smallBlind: 50, bigBlind: 100, ante: 0, duration: 20 },
+      { smallBlind: 75, bigBlind: 150, ante: 0, duration: 20 },
+      { smallBlind: 100, bigBlind: 200, ante: 25, duration: 20 },
+      { smallBlind: 150, bigBlind: 300, ante: 50, duration: 20 },
+      { smallBlind: 200, bigBlind: 400, ante: 50, duration: 20 },
+      { smallBlind: 300, bigBlind: 600, ante: 75, duration: 20 },
+      { smallBlind: 400, bigBlind: 800, ante: 100, duration: 20 },
+    ];
+
+    const PokerChip = ({ size = 40 }) => (
+      <svg width={size} height={size} viewBox="0 0 200 200">
+        <ellipse cx="100" cy="15" rx="20" ry="15" fill="#1a1a1a" />
+        <ellipse cx="100" cy="185" rx="20" ry="15" fill="#1a1a1a" />
+        <ellipse cx="15" cy="100" rx="15" ry="20" fill="#1a1a1a" />
+        <ellipse cx="185" cy="100" rx="15" ry="20" fill="#1a1a1a" />
+        <circle cx="100" cy="100" r="70" fill="#1a1a1a" />
+        <circle cx="100" cy="100" r="55" fill="none" stroke="#FF8030" strokeWidth="6" />
+        <circle cx="100" cy="100" r="40" fill="#1a1a1a" />
+      </svg>
+    );
+
+    const syncToStorage = (data) => {
+      localStorage.setItem('pokerTimerData', JSON.stringify({ ...data, timestamp: Date.now() }));
+    };
+
+    const getFromStorage = () => {
+      const data = localStorage.getItem('pokerTimerData');
+      return data ? JSON.parse(data) : null;
+    };
+
+    function PokerTournamentTimer() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isDisplayMode = urlParams.get('mode') === 'display';
+      
+      const [levels, setLevels] = useState(defaultLevels);
+      const [currentLevel, setCurrentLevel] = useState(0);
+      const [timeLeft, setTimeLeft] = useState(defaultLevels[0].duration * 60);
+      const [isRunning, setIsRunning] = useState(false);
+      const [showSettings, setShowSettings] = useState(false);
+      const [showControlPanel, setShowControlPanel] = useState(true);
+      const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '', onConfirm: null });
+      const [newLevel, setNewLevel] = useState({ smallBlind: '', bigBlind: '', ante: '', duration: '' });
+      const [totalPlayers, setTotalPlayers] = useState(10);
+      const [remainingPlayers, setRemainingPlayers] = useState(10);
+      const [startingChips, setStartingChips] = useState(10000);
+      const [currentTime, setCurrentTime] = useState(new Date());
+      const audioRef = useRef(null);
+      const lastSyncRef = useRef(0);
+
+      const syncData = () => {
+        if (!isDisplayMode) {
+          syncToStorage({ levels, currentLevel, timeLeft, isRunning, totalPlayers, remainingPlayers, startingChips });
+        }
+      };
+
+      useEffect(() => { syncData(); }, [levels, currentLevel, timeLeft, isRunning, totalPlayers, remainingPlayers, startingChips]);
+
+      useEffect(() => {
+        if (isDisplayMode) {
+          const handleStorageChange = () => {
+            const data = getFromStorage();
+            if (data && data.timestamp > lastSyncRef.current) {
+              lastSyncRef.current = data.timestamp;
+              setLevels(data.levels);
+              setCurrentLevel(data.currentLevel);
+              setTimeLeft(data.timeLeft);
+              setIsRunning(data.isRunning);
+              setTotalPlayers(data.totalPlayers);
+              setRemainingPlayers(data.remainingPlayers);
+              setStartingChips(data.startingChips);
+            }
+          };
+          const interval = setInterval(handleStorageChange, 100);
+          handleStorageChange();
+          window.addEventListener('storage', handleStorageChange);
+          return () => { clearInterval(interval); window.removeEventListener('storage', handleStorageChange); };
+        }
+      }, [isDisplayMode]);
+
+      useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+      }, []);
+
+      const formatBeijingTime = () => currentTime.toLocaleTimeString('zh-CN', { timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+      const formatBeijingDate = () => currentTime.toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', weekday: 'short' });
+
+      useEffect(() => {
+        if (isDisplayMode) return;
+        let interval = null;
+        if (isRunning && timeLeft > 0) {
+          interval = setInterval(() => setTimeLeft((time) => time - 1), 1000);
+        } else if (timeLeft === 0 && isRunning) {
+          if (audioRef.current) audioRef.current.play().catch(() => {});
+          if (currentLevel < levels.length - 1) {
+            setCurrentLevel((prev) => prev + 1);
+            setTimeLeft(levels[currentLevel + 1].duration * 60);
+          } else {
+            setIsRunning(false);
+          }
+        }
+        return () => clearInterval(interval);
+      }, [isRunning, timeLeft, currentLevel, levels, isDisplayMode]);
+
+      const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      };
+
+      const handleStart = () => setIsRunning(true);
+      const handlePause = () => setIsRunning(false);
+      const handlePrevLevel = () => {
+        if (currentLevel > 0) {
+          setConfirmDialog({
+            show: true, message: '确认返回上一级？\nConfirm to go to previous level?',
+            onConfirm: () => { setCurrentLevel(currentLevel - 1); setTimeLeft(levels[currentLevel - 1].duration * 60); setConfirmDialog({ show: false, message: '', onConfirm: null }); }
+          });
+        }
+      };
+      const handleNextLevel = () => {
+        if (currentLevel < levels.length - 1) {
+          setConfirmDialog({
+            show: true, message: '确认跳到下一级？\nConfirm to go to next level?',
+            onConfirm: () => { setCurrentLevel(currentLevel + 1); setTimeLeft(levels[currentLevel + 1].duration * 60); setConfirmDialog({ show: false, message: '', onConfirm: null }); }
+          });
+        }
+      };
+      const handleReset = () => {
+        setConfirmDialog({
+          show: true, message: '确认重置当前级别倒计时？\nConfirm to reset current level timer?',
+          onConfirm: () => { setTimeLeft(levels[currentLevel].duration * 60); setConfirmDialog({ show: false, message: '', onConfirm: null }); }
+        });
+      };
+      const handlePlayerOut = () => { if (remainingPlayers > 1) setRemainingPlayers(remainingPlayers - 1); };
+      const handlePlayerBack = () => { if (remainingPlayers < totalPlayers) setRemainingPlayers(remainingPlayers + 1); };
+      const averageChips = remainingPlayers > 0 ? Math.round((totalPlayers * startingChips) / remainingPlayers) : 0;
+
+      const handleAddLevel = () => {
+        if (newLevel.smallBlind && newLevel.bigBlind && newLevel.duration) {
+          setLevels([...levels, { smallBlind: parseInt(newLevel.smallBlind), bigBlind: parseInt(newLevel.bigBlind), ante: parseInt(newLevel.ante) || 0, duration: parseInt(newLevel.duration) }]);
+          setNewLevel({ smallBlind: '', bigBlind: '', ante: '', duration: '' });
+        }
+      };
+      const handleDeleteLevel = (index) => {
+        if (levels.length > 1) {
+          const newLevels = levels.filter((_, i) => i !== index);
+          setLevels(newLevels);
+          if (currentLevel >= newLevels.length) { setCurrentLevel(newLevels.length - 1); setTimeLeft(newLevels[newLevels.length - 1].duration * 60); }
+        }
+      };
+      const handleSaveEdit = (index, field, value) => {
+        const newLevels = [...levels];
+        newLevels[index][field] = parseInt(value) || 0;
+        setLevels(newLevels);
+        if (index === currentLevel && field === 'duration') setTimeLeft(parseInt(value) * 60 || 0);
+      };
+
+      const openDisplayWindow = () => {
+        const url = window.location.href.split('?')[0] + '?mode=display';
+        window.open(url, 'PokerTimerDisplay', 'width=1920,height=1080');
+      };
+
+      const current = levels[currentLevel];
+      const next = levels[currentLevel + 1];
+      const progress = ((current.duration * 60 - timeLeft) / (current.duration * 60)) * 100;
+      const isLowTime = timeLeft <= 60;
+
+      const inputStyle = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,128,48,0.3)', color: '#e0e0e0', padding: '8px 12px', fontSize: '14px', width: '80px', textAlign: 'center', borderRadius: '10px' };
+      const inputStyleLarge = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,128,48,0.3)', color: '#e0e0e0', padding: '12px 16px', fontSize: '16px', width: '100%', boxSizing: 'border-box', borderRadius: '12px' };
+      const labelStyle = { display: 'block', fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginBottom: '8px', letterSpacing: '1px' };
+      const labelEngStyle = { fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontFamily: 'Arial, sans-serif', marginLeft: '5px' };
+      const controlButtonStyle = { background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', color: '#e0e0e0', padding: '15px 20px', cursor: 'pointer', fontSize: '18px', letterSpacing: '2px', transition: 'all 0.3s ease', fontFamily: "'Bebas Neue', 'Arial Black', sans-serif", textAlign: 'center', borderRadius: '16px', width: '130px' };
+      const buttonSubtextStyle = { fontSize: '10px', opacity: 0.5, fontFamily: 'Arial, sans-serif', marginTop: '2px' };
+      const headerSubStyle = { fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', fontWeight: 'normal', marginTop: '2px' };
+
+      return (
+        <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)', fontFamily: "'Bebas Neue', 'Arial Black', sans-serif", color: '#e0e0e0', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(255,128,48,0.03) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(255,128,48,0.02) 0%, transparent 30%), radial-gradient(circle at 80% 20%, rgba(255,128,48,0.02) 0%, transparent 30%)', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', top: '10%', left: '5%', opacity: 0.08, transform: 'rotate(-15deg)' }}><PokerChip size={120} /></div>
+          <div style={{ position: 'absolute', bottom: '15%', right: '5%', opacity: 0.08, transform: 'rotate(20deg)' }}><PokerChip size={100} /></div>
+
+          <audio ref={audioRef} preload="auto">
+            <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleQEOS9PzzIk7AD6v4eSZTwAQgNHsqWkABWq66bF7DwBSpNzHjTMAIYrQ37RrAARptuq4fhAAWKngy5E3ACeS1d+1agAIcrjptYIQAF2s4MyTOAAqltbftmkAC3a67LSCDwBhsOHMlDgALZnX37ZoAA56vOyygA8AZbLhzJQ4AC+b2N+1ZwARfb7srH8OAGm04suUOAAxndjftGYAFIDArKp9DQBttuLKkzcAM5/Z37NkABeEwqunewwAcbjhyZI3ADWB2t+yYwAaiMOnpHoLAHW64ceRNgA3g9vfsGEAHYvEpKF4CgB5vODFjzUAOYbc3q5fACCOxqGedwkAfb7fwow0ADuJ3d2sXQAjkcegm3UIAIC/3b+KNAA9i97cqVsAJpTHnph0BwCEwd27iDMAP43f26daACmXyJuVcgYAh8LcuIYyAEGP4NsOWQAsnMmYknEFAIrE27WEMQBDkeDbTFcAL5/KlI9vBACNxdqygjAARadg3KtWADKhy5GPbgMAkMbZr4AvAEiD4ttqVAA1pMyNjGwCAJPI2KyALgBKheLbZ1IAOKfNioluAQCWydetfC0ATIfj21hQADuqzoaMbQAAmcvWqnssAE6J49tVTgA+rM+Dim0AAJzM1ad6KwBQi+TbUkwAQa/QgYhuAACfzaTelCoAUo3k20hKAESx0X+GbgAAos+j3JEpAFSP5ds/SABAAE6T5ds3RgBJtdJ7gm0AAKnRn9iNJwBYkubbMEMAT7jUeIBtAACt0p3ViSYAWpTo2ypBAAAAAAAA" type="audio/wav" />
+          </audio>
+
+          {/* Header */}
+          <div style={{ padding: '20px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,128,48,0.3)', position: 'relative', zIndex: 10, background: 'rgba(26, 26, 26, 0.95)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <img src="canary-logo.png" alt="Canary Bar Logo" style={{ height: '100px', width: 'auto', objectFit: 'contain' }} />
+              <div>
+                <h1 style={{ margin: 0, fontSize: '36px', letterSpacing: '8px', color: '#FF8030', fontFamily: '"Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif', fontWeight: '600' }}>卡纳酒吧巅峰赛</h1>
+                <p style={{ margin: '5px 0 0 0', fontSize: '12px', letterSpacing: '3px', color: 'rgba(255,255,255,0.5)', fontFamily: 'Arial, sans-serif' }}>CANARY BAR CHAMPIONSHIP</p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.3)', padding: '12px 20px', borderRadius: '12px', border: '1px solid rgba(255,128,48,0.2)' }}>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', letterSpacing: '2px', marginBottom: '4px' }}>北京时间 <span style={{ fontFamily: 'Arial, sans-serif', fontSize: '10px' }}>BEIJING TIME</span></div>
+                <div style={{ fontSize: '28px', color: '#FF8030', letterSpacing: '2px', fontFamily: "'Bebas Neue', sans-serif" }}>{formatBeijingTime()}</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '2px' }}>{formatBeijingDate()}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Settings Page */}
+          {!isDisplayMode && showSettings ? (
+            <div style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto', position: 'relative', zIndex: 10, paddingBottom: '150px' }}>
+              <div style={{ marginBottom: '30px' }}>
+                <h2 style={{ fontSize: '28px', letterSpacing: '4px', marginBottom: '5px', color: '#FF8030' }}>比赛设置</h2>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif' }}>TOURNAMENT SETTINGS</div>
+              </div>
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '25px', border: '1px solid rgba(255,128,48,0.2)', borderRadius: '16px', marginBottom: '30px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+                  <div>
+                    <label style={labelStyle}>起始人数 <span style={labelEngStyle}>TOTAL PLAYERS</span></label>
+                    <input type="number" value={totalPlayers} onChange={(e) => { const val = parseInt(e.target.value) || 1; setTotalPlayers(val); if (remainingPlayers > val) setRemainingPlayers(val); }} style={inputStyleLarge} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>起始筹码 <span style={labelEngStyle}>STARTING CHIPS</span></label>
+                    <input type="number" value={startingChips} onChange={(e) => setStartingChips(parseInt(e.target.value) || 0)} style={inputStyleLarge} />
+                  </div>
+                </div>
+              </div>
+              <div style={{ marginBottom: '30px' }}>
+                <h2 style={{ fontSize: '28px', letterSpacing: '4px', marginBottom: '5px', color: '#FF8030' }}>盲注级别设置</h2>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif' }}>BLIND LEVEL SETTINGS</div>
+              </div>
+              <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: '16px', overflow: 'hidden', marginBottom: '30px', border: '1px solid rgba(255,128,48,0.2)' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr 1fr 1fr 1fr 100px', padding: '15px 20px', background: 'rgba(255,128,48,0.15)', fontWeight: 'bold', letterSpacing: '1px', fontSize: '14px', color: '#FF8030' }}>
+                  <div><div>级别</div><div style={headerSubStyle}>LEVEL</div></div>
+                  <div><div>小盲</div><div style={headerSubStyle}>SMALL</div></div>
+                  <div><div>大盲</div><div style={headerSubStyle}>BIG</div></div>
+                  <div><div>前注</div><div style={headerSubStyle}>ANTE</div></div>
+                  <div><div>时长</div><div style={headerSubStyle}>MINS</div></div>
+                  <div><div>操作</div><div style={headerSubStyle}>ACTION</div></div>
+                </div>
+                {levels.map((level, index) => (
+                  <div key={index} style={{ display: 'grid', gridTemplateColumns: '80px 1fr 1fr 1fr 1fr 100px', padding: '12px 20px', borderBottom: '1px solid rgba(255,128,48,0.1)', alignItems: 'center', background: index === currentLevel ? 'rgba(255,128,48,0.1)' : 'transparent', color: '#e0e0e0', fontFamily: 'Arial, sans-serif' }}>
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: '20px', color: '#FF8030' }}>{index + 1}</span>
+                    <input type="number" value={level.smallBlind} onChange={(e) => handleSaveEdit(index, 'smallBlind', e.target.value)} style={inputStyle} />
+                    <input type="number" value={level.bigBlind} onChange={(e) => handleSaveEdit(index, 'bigBlind', e.target.value)} style={inputStyle} />
+                    <input type="number" value={level.ante} onChange={(e) => handleSaveEdit(index, 'ante', e.target.value)} style={inputStyle} />
+                    <input type="number" value={level.duration} onChange={(e) => handleSaveEdit(index, 'duration', e.target.value)} style={inputStyle} />
+                    <button onClick={() => handleDeleteLevel(index)} style={{ background: 'transparent', border: '1px solid rgba(255,128,48,0.5)', color: '#FF8030', padding: '8px 16px', cursor: 'pointer', fontSize: '12px', borderRadius: '10px' }}>删除</button>
+                  </div>
+                ))}
+              </div>
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '25px', border: '1px solid rgba(255,128,48,0.2)', borderRadius: '16px' }}>
+                <div style={{ marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '20px', letterSpacing: '2px', marginBottom: '5px', color: '#FF8030' }}>添加新级别</h3>
+                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif' }}>ADD NEW LEVEL</div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr auto', gap: '15px', alignItems: 'end' }}>
+                  <div><label style={labelStyle}>小盲 <span style={labelEngStyle}>SMALL</span></label><input type="number" value={newLevel.smallBlind} onChange={(e) => setNewLevel({...newLevel, smallBlind: e.target.value})} placeholder="100" style={inputStyleLarge} /></div>
+                  <div><label style={labelStyle}>大盲 <span style={labelEngStyle}>BIG</span></label><input type="number" value={newLevel.bigBlind} onChange={(e) => setNewLevel({...newLevel, bigBlind: e.target.value})} placeholder="200" style={inputStyleLarge} /></div>
+                  <div><label style={labelStyle}>前注 <span style={labelEngStyle}>ANTE</span></label><input type="number" value={newLevel.ante} onChange={(e) => setNewLevel({...newLevel, ante: e.target.value})} placeholder="0" style={inputStyleLarge} /></div>
+                  <div><label style={labelStyle}>时长 <span style={labelEngStyle}>MINS</span></label><input type="number" value={newLevel.duration} onChange={(e) => setNewLevel({...newLevel, duration: e.target.value})} placeholder="20" style={inputStyleLarge} /></div>
+                  <button onClick={handleAddLevel} style={{ background: 'rgba(255,128,48,0.8)', border: 'none', color: '#1a1a1a', padding: '15px 30px', cursor: 'pointer', fontSize: '16px', letterSpacing: '2px', fontFamily: "'Bebas Neue', sans-serif", borderRadius: '12px' }}>添加</button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px', minHeight: isDisplayMode ? 'calc(100vh - 160px)' : 'calc(100vh - 250px)', position: 'relative', zIndex: 10 }}>
+              <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+                <div style={{ fontSize: '42px', letterSpacing: '8px', color: 'rgba(255,255,255,0.8)' }}>第 {currentLevel + 1} 级 / 共 {levels.length} 级</div>
+                <div style={{ fontSize: '18px', letterSpacing: '4px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '8px' }}>LEVEL {currentLevel + 1} OF {levels.length}</div>
+              </div>
+
+              <div style={{ width: '80%', maxWidth: '800px', height: '8px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: '30px', borderRadius: '10px' }}>
+                <div style={{ width: `${progress}%`, height: '100%', background: isLowTime ? '#e05555' : '#FF8030', transition: 'width 1s linear', opacity: 0.8 }} />
+              </div>
+
+              <div style={{ background: 'rgba(0,0,0,0.4)', padding: '25px 60px', marginBottom: '30px', borderRadius: '24px', border: '1px solid rgba(255,128,48,0.2)', minWidth: '450px', textAlign: 'center', position: 'relative' }}>
+                {!isRunning && timeLeft > 0 && timeLeft < current.duration * 60 && (
+                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.95)', padding: '40px 80px', borderRadius: '24px', border: '3px solid #FF8030', zIndex: 20 }}>
+                    <div style={{ fontSize: '56px', color: '#FF8030', letterSpacing: '12px', marginBottom: '10px' }}>比赛暂停</div>
+                    <div style={{ fontSize: '20px', color: 'rgba(255,255,255,0.5)', letterSpacing: '6px', fontFamily: 'Arial, sans-serif' }}>GAME PAUSED</div>
+                  </div>
+                )}
+                <div style={{ fontSize: 'clamp(80px, 15vw, 150px)', fontWeight: 'bold', letterSpacing: '15px', color: isLowTime ? '#e05555' : '#FF8030', textShadow: isLowTime ? '0 0 30px rgba(224, 85, 85, 0.4)' : '0 0 20px rgba(255, 128, 48, 0.3)' }}>{formatTime(timeLeft)}</div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '20px', marginBottom: '25px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.4)', padding: '20px 15px', width: '150px', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.2)' }}>
+                  <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', letterSpacing: '2px', marginBottom: '2px' }}>小盲</div>
+                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '8px' }}>SMALL BLIND</div>
+                  <div style={{ fontSize: '46px', color: '#FF8030' }}>{current.smallBlind}</div>
+                </div>
+                <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.4)', padding: '20px 15px', width: '150px', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.2)' }}>
+                  <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', letterSpacing: '2px', marginBottom: '2px' }}>大盲</div>
+                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '8px' }}>BIG BLIND</div>
+                  <div style={{ fontSize: '46px', color: '#FF8030' }}>{current.bigBlind}</div>
+                </div>
+                {current.ante > 0 && (
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.4)', padding: '20px 15px', width: '150px', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.2)' }}>
+                    <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', letterSpacing: '2px', marginBottom: '2px' }}>前注</div>
+                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '8px' }}>ANTE</div>
+                    <div style={{ fontSize: '46px', color: '#FF8030' }}>{current.ante}</div>
+                  </div>
+                )}
+                <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.4)', padding: '20px 15px', width: '150px', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.2)' }}>
+                  <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', letterSpacing: '2px', marginBottom: '2px' }}>参赛</div>
+                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '8px' }}>PLAYERS</div>
+                  <div style={{ fontSize: '46px', color: '#FF8030' }}>{remainingPlayers}<span style={{ fontSize: '24px', color: 'rgba(255,255,255,0.4)' }}>/{totalPlayers}</span></div>
+                </div>
+                <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.4)', padding: '20px 15px', width: '150px', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.2)' }}>
+                  <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', letterSpacing: '2px', marginBottom: '2px' }}>均码</div>
+                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '8px' }}>AVG CHIPS</div>
+                  <div style={{ fontSize: '32px', color: '#FF8030' }}>{averageChips.toLocaleString()}</div>
+                </div>
+              </div>
+
+              {next && (
+                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '12px 40px', marginBottom: '20px', border: '1px solid rgba(255,128,48,0.15)', textAlign: 'center', borderRadius: '16px', minWidth: '350px' }}>
+                  <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', letterSpacing: '2px' }}>下一级 <span style={{ fontSize: '10px', fontFamily: 'Arial, sans-serif' }}>NEXT LEVEL</span></div>
+                  <span style={{ fontSize: '22px', color: 'rgba(255,128,48,0.8)', letterSpacing: '3px' }}>{next.smallBlind} / {next.bigBlind}{next.ante > 0 && ` (前注 ${next.ante})`}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Control Panel - Only in Control Mode */}
+          {!isDisplayMode && (
+            <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100 }}>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <button onClick={() => setShowControlPanel(!showControlPanel)} style={{ background: 'rgba(26, 26, 26, 0.95)', border: '1px solid rgba(255,128,48,0.3)', borderBottom: 'none', color: '#FF8030', padding: '6px 40px', cursor: 'pointer', fontSize: '16px', borderRadius: '12px 12px 0 0' }}>{showControlPanel ? '▼' : '▲'}</button>
+              </div>
+              {showControlPanel && (
+                <div style={{ background: 'rgba(26, 26, 26, 0.98)', borderTop: '1px solid rgba(255,128,48,0.3)', padding: '15px 40px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
+                    <button onClick={openDisplayWindow} style={{ background: 'rgba(80,160,80,0.3)', border: '2px solid rgba(80,160,80,0.8)', color: '#50a050', padding: '10px 15px', cursor: 'pointer', fontSize: '12px', letterSpacing: '1px', fontFamily: 'inherit', textAlign: 'center', borderRadius: '12px' }}>📺 打开观众窗口<br/><span style={{ fontSize: '9px', opacity: 0.7, fontFamily: 'Arial, sans-serif' }}>OPEN DISPLAY</span></button>
+                    <div style={{ width: '1px', height: '40px', background: 'rgba(255,128,48,0.3)' }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.3)', padding: '8px 15px', borderRadius: '12px' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', textAlign: 'center' }}>人数<br/><span style={{ fontSize: '9px' }}>PLAYERS</span></span>
+                      <button onClick={handlePlayerOut} style={{ background: '#e05555', border: 'none', color: '#fff', width: '36px', height: '36px', cursor: 'pointer', fontSize: '20px', borderRadius: '8px', fontWeight: 'bold' }}>-</button>
+                      <span style={{ color: '#FF8030', fontSize: '20px', minWidth: '40px', textAlign: 'center' }}>{remainingPlayers}</span>
+                      <button onClick={handlePlayerBack} style={{ background: '#50a050', border: 'none', color: '#fff', width: '36px', height: '36px', cursor: 'pointer', fontSize: '20px', borderRadius: '8px', fontWeight: 'bold' }}>+</button>
+                    </div>
+                    <div style={{ width: '1px', height: '40px', background: 'rgba(255,128,48,0.3)' }} />
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <button onClick={handlePrevLevel} style={{...controlButtonStyle, padding: '10px 15px', width: '100px', fontSize: '14px'}}>◀ 上一级<br/><span style={buttonSubtextStyle}>PREV</span></button>
+                      {isRunning ? (
+                        <button onClick={handlePause} style={{ ...controlButtonStyle, padding: '10px 15px', width: '100px', fontSize: '14px', background: 'rgba(255,128,48,0.2)', borderColor: 'rgba(255,128,48,0.6)' }}>⏸ 暂停<br/><span style={buttonSubtextStyle}>PAUSE</span></button>
+                      ) : (
+                        <button onClick={handleStart} style={{ ...controlButtonStyle, padding: '10px 15px', width: '100px', fontSize: '14px', background: 'rgba(255,128,48,0.2)', borderColor: 'rgba(255,128,48,0.6)' }}>▶ 开始<br/><span style={buttonSubtextStyle}>START</span></button>
+                      )}
+                      <button onClick={handleReset} style={{...controlButtonStyle, padding: '10px 15px', width: '100px', fontSize: '14px'}}>↺ 重置<br/><span style={buttonSubtextStyle}>RESET</span></button>
+                      <button onClick={handleNextLevel} style={{...controlButtonStyle, padding: '10px 15px', width: '100px', fontSize: '14px'}}>下一级 ▶<br/><span style={buttonSubtextStyle}>NEXT</span></button>
+                    </div>
+                    <div style={{ width: '1px', height: '40px', background: 'rgba(255,128,48,0.3)' }} />
+                    <button onClick={() => setShowSettings(!showSettings)} style={{ background: showSettings ? 'rgba(255,128,48,0.2)' : 'transparent', border: '2px solid rgba(255,128,48,0.6)', color: '#FF8030', padding: '10px 20px', cursor: 'pointer', fontSize: '14px', letterSpacing: '2px', fontFamily: 'inherit', textAlign: 'center', borderRadius: '14px' }}>⚙ 设置<br/><span style={{ fontSize: '9px', opacity: 0.7, fontFamily: 'Arial, sans-serif' }}>SETTINGS</span></button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Confirm Dialog - Only in Control Mode */}
+          {!isDisplayMode && confirmDialog.show && (
+            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 200 }}>
+              <div style={{ background: 'rgba(26, 26, 26, 0.98)', padding: '40px 60px', borderRadius: '20px', border: '2px solid #FF8030', textAlign: 'center', maxWidth: '400px' }}>
+                <div style={{ fontSize: '24px', color: '#e0e0e0', marginBottom: '30px', whiteSpace: 'pre-line', lineHeight: '1.5' }}>{confirmDialog.message}</div>
+                <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
+                  <button onClick={() => setConfirmDialog({ show: false, message: '', onConfirm: null })} style={{ background: 'transparent', border: '2px solid rgba(255,255,255,0.3)', color: '#e0e0e0', padding: '12px 40px', cursor: 'pointer', fontSize: '18px', borderRadius: '12px' }}>取消<br/><span style={{ fontSize: '12px', opacity: 0.6 }}>CANCEL</span></button>
+                  <button onClick={confirmDialog.onConfirm} style={{ background: '#FF8030', border: 'none', color: '#1a1a1a', padding: '12px 40px', cursor: 'pointer', fontSize: '18px', borderRadius: '12px', fontWeight: 'bold' }}>确认<br/><span style={{ fontSize: '12px', opacity: 0.7 }}>CONFIRM</span></button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <style>{`
+            input:focus { outline: none; border-color: #FF8030 !important; box-shadow: 0 0 10px rgba(255, 128, 48, 0.3); }
+            button:hover { opacity: 0.9; }
+          `}</style>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<PokerTournamentTimer />);
+  </script>
+</body>
+</html>
