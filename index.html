@@ -19,14 +19,19 @@
     const { useState, useEffect, useRef } = React;
 
     const defaultLevels = [
-      { smallBlind: 25, bigBlind: 50, ante: 0, duration: 20 },
       { smallBlind: 50, bigBlind: 100, ante: 0, duration: 20 },
-      { smallBlind: 75, bigBlind: 150, ante: 0, duration: 20 },
-      { smallBlind: 100, bigBlind: 200, ante: 25, duration: 20 },
-      { smallBlind: 150, bigBlind: 300, ante: 50, duration: 20 },
-      { smallBlind: 200, bigBlind: 400, ante: 50, duration: 20 },
-      { smallBlind: 300, bigBlind: 600, ante: 75, duration: 20 },
-      { smallBlind: 400, bigBlind: 800, ante: 100, duration: 20 },
+      { smallBlind: 100, bigBlind: 200, ante: 0, duration: 20 },
+      { smallBlind: 150, bigBlind: 300, ante: 0, duration: 20 },
+      { smallBlind: 200, bigBlind: 400, ante: 400, duration: 20 },
+      { smallBlind: 400, bigBlind: 800, ante: 800, duration: 20 },
+      { smallBlind: 500, bigBlind: 1000, ante: 1000, duration: 20 },
+      { smallBlind: 700, bigBlind: 1400, ante: 1400, duration: 20 },
+      { smallBlind: 1000, bigBlind: 2000, ante: 2000, duration: 20 },
+      { smallBlind: 1500, bigBlind: 3000, ante: 3000, duration: 20 },
+      { smallBlind: 2000, bigBlind: 4000, ante: 4000, duration: 20 },
+      { smallBlind: 3000, bigBlind: 6000, ante: 6000, duration: 20 },
+      { smallBlind: 4000, bigBlind: 8000, ante: 8000, duration: 20 },
+      { smallBlind: 5000, bigBlind: 10000, ante: 10000, duration: 20 },
     ];
 
     const PokerChip = ({ size = 40 }) => (
@@ -39,6 +44,67 @@
         <circle cx="100" cy="100" r="55" fill="none" stroke="#FF8030" strokeWidth="6" />
         <circle cx="100" cy="100" r="40" fill="#1a1a1a" />
       </svg>
+    );
+
+    // 扑克牌花色组件
+    const CardSuit = ({ suit, size = 30, style }) => {
+      const suits = {
+        spade: { symbol: '♠', color: '#ffffff' },
+        heart: { symbol: '♥', color: '#FF8030' },
+        diamond: { symbol: '♦', color: '#FF8030' },
+        club: { symbol: '♣', color: '#ffffff' }
+      };
+      const s = suits[suit];
+      return (
+        <div style={{ fontSize: size, color: s.color, opacity: 0.08, ...style }}>{s.symbol}</div>
+      );
+    };
+
+    // 扑克牌组件
+    const PokerCard = ({ rank, suit, style }) => {
+      const isRed = suit === 'heart' || suit === 'diamond';
+      const suitSymbols = { spade: '♠', heart: '♥', diamond: '♦', club: '♣' };
+      return (
+        <div style={{
+          width: '60px',
+          height: '84px',
+          background: 'rgba(255,255,255,0.03)',
+          borderRadius: '8px',
+          border: '1px solid rgba(255,255,255,0.08)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          padding: '6px',
+          position: 'absolute',
+          backdropFilter: 'blur(2px)',
+          ...style
+        }}>
+          <div style={{ color: isRed ? 'rgba(255,128,48,0.3)' : 'rgba(255,255,255,0.2)', fontSize: '14px', fontWeight: 'bold', lineHeight: 1 }}>
+            {rank}<br/>{suitSymbols[suit]}
+          </div>
+          <div style={{ color: isRed ? 'rgba(255,128,48,0.3)' : 'rgba(255,255,255,0.2)', fontSize: '24px', textAlign: 'center' }}>
+            {suitSymbols[suit]}
+          </div>
+        </div>
+      );
+    };
+
+    // 筹码堆组件
+    const ChipStack = ({ count = 5, style }) => (
+      <div style={{ position: 'absolute', ...style }}>
+        {[...Array(count)].map((_, i) => (
+          <div key={i} style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            background: i % 2 === 0 ? 'rgba(255,128,48,0.15)' : 'rgba(255,255,255,0.08)',
+            border: '2px solid rgba(255,128,48,0.2)',
+            position: 'absolute',
+            top: -i * 6,
+            boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          }} />
+        ))}
+      </div>
     );
 
     const syncToStorage = (data) => {
@@ -64,18 +130,24 @@
       const [newLevel, setNewLevel] = useState({ smallBlind: '', bigBlind: '', ante: '', duration: '' });
       const [totalPlayers, setTotalPlayers] = useState(10);
       const [remainingPlayers, setRemainingPlayers] = useState(10);
-      const [startingChips, setStartingChips] = useState(10000);
+      const [startingChips, setStartingChips] = useState(20000);
+      const [totalChips, setTotalChips] = useState(200000);
+      const [prizeStructure, setPrizeStructure] = useState([
+        { place: 1, percent: 50 },
+        { place: 2, percent: 30 },
+        { place: 3, percent: 20 },
+      ]);
       const [currentTime, setCurrentTime] = useState(new Date());
       const audioRef = useRef(null);
       const lastSyncRef = useRef(0);
 
       const syncData = () => {
         if (!isDisplayMode) {
-          syncToStorage({ levels, currentLevel, timeLeft, isRunning, totalPlayers, remainingPlayers, startingChips });
+          syncToStorage({ levels, currentLevel, timeLeft, isRunning, totalPlayers, remainingPlayers, startingChips, totalChips, prizeStructure });
         }
       };
 
-      useEffect(() => { syncData(); }, [levels, currentLevel, timeLeft, isRunning, totalPlayers, remainingPlayers, startingChips]);
+      useEffect(() => { syncData(); }, [levels, currentLevel, timeLeft, isRunning, totalPlayers, remainingPlayers, startingChips, totalChips, prizeStructure]);
 
       useEffect(() => {
         if (isDisplayMode) {
@@ -90,6 +162,8 @@
               setTotalPlayers(data.totalPlayers);
               setRemainingPlayers(data.remainingPlayers);
               setStartingChips(data.startingChips);
+              setTotalChips(data.totalChips);
+              if (data.prizeStructure !== undefined) setPrizeStructure(data.prizeStructure);
             }
           };
           const interval = setInterval(handleStorageChange, 100);
@@ -155,8 +229,30 @@
         });
       };
       const handlePlayerOut = () => { if (remainingPlayers > 1) setRemainingPlayers(remainingPlayers - 1); };
-      const handlePlayerBack = () => { if (remainingPlayers < totalPlayers) setRemainingPlayers(remainingPlayers + 1); };
-      const averageChips = remainingPlayers > 0 ? Math.round((totalPlayers * startingChips) / remainingPlayers) : 0;
+      const handlePlayerBack = () => { setRemainingPlayers(remainingPlayers + 1); setTotalPlayers(Math.max(totalPlayers, remainingPlayers + 1)); };
+      const handleChipsAdd = () => { setTotalChips(totalChips + startingChips); };
+      const handleChipsRemove = () => { if (totalChips > startingChips) setTotalChips(totalChips - startingChips); };
+      const averageChips = remainingPlayers > 0 ? Math.round(totalChips / remainingPlayers) : 0;
+      
+      const totalPercent = prizeStructure.reduce((sum, p) => sum + p.percent, 0);
+      const handleAddPrizePlace = () => {
+        if (totalPercent < 100) {
+          const newPlace = prizeStructure.length + 1;
+          setPrizeStructure([...prizeStructure, { place: newPlace, percent: 0 }]);
+        }
+      };
+      const handleRemovePrizePlace = () => {
+        if (prizeStructure.length > 1) {
+          setPrizeStructure(prizeStructure.slice(0, -1));
+        }
+      };
+      const handlePrizePercentChange = (index, value) => {
+        const newValue = Math.max(0, Math.min(100, parseInt(value) || 0));
+        const newStructure = [...prizeStructure];
+        const otherTotal = newStructure.reduce((sum, p, i) => i === index ? sum : sum + p.percent, 0);
+        newStructure[index].percent = Math.min(newValue, 100 - otherTotal);
+        setPrizeStructure(newStructure);
+      };
 
       const handleAddLevel = () => {
         if (newLevel.smallBlind && newLevel.bigBlind && newLevel.duration) {
@@ -199,8 +295,33 @@
       return (
         <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)', fontFamily: "'Bebas Neue', 'Arial Black', sans-serif", color: '#e0e0e0', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(255,128,48,0.03) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(255,128,48,0.02) 0%, transparent 30%), radial-gradient(circle at 80% 20%, rgba(255,128,48,0.02) 0%, transparent 30%)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', top: '10%', left: '5%', opacity: 0.08, transform: 'rotate(-15deg)' }}><PokerChip size={120} /></div>
-          <div style={{ position: 'absolute', bottom: '15%', right: '5%', opacity: 0.08, transform: 'rotate(20deg)' }}><PokerChip size={100} /></div>
+          
+          {/* 扑克牌装饰 - 左侧 */}
+          <PokerCard rank="A" suit="spade" style={{ top: '15%', left: '2%', transform: 'rotate(-15deg)' }} />
+          <PokerCard rank="K" suit="heart" style={{ top: '32%', left: '4%', transform: 'rotate(8deg)' }} />
+          <PokerCard rank="Q" suit="diamond" style={{ bottom: '35%', left: '1%', transform: 'rotate(-22deg)' }} />
+          <PokerCard rank="J" suit="club" style={{ bottom: '18%', left: '3%', transform: 'rotate(12deg)' }} />
+          
+          {/* 扑克牌装饰 - 右侧 */}
+          <PokerCard rank="A" suit="heart" style={{ top: '18%', right: '2%', transform: 'rotate(18deg)' }} />
+          <PokerCard rank="K" suit="spade" style={{ top: '35%', right: '4%', transform: 'rotate(-12deg)' }} />
+          <PokerCard rank="10" suit="diamond" style={{ bottom: '38%', right: '1%', transform: 'rotate(15deg)' }} />
+          <PokerCard rank="9" suit="club" style={{ bottom: '20%', right: '3%', transform: 'rotate(-8deg)' }} />
+
+          {/* 花色装饰 */}
+          <CardSuit suit="spade" size={150} style={{ position: 'absolute', top: '8%', left: '12%' }} />
+          <CardSuit suit="heart" size={100} style={{ position: 'absolute', top: '55%', left: '6%' }} />
+          <CardSuit suit="diamond" size={120} style={{ position: 'absolute', bottom: '12%', right: '12%' }} />
+          <CardSuit suit="club" size={110} style={{ position: 'absolute', top: '10%', right: '15%' }} />
+          <CardSuit suit="heart" size={80} style={{ position: 'absolute', top: '45%', right: '3%' }} />
+          <CardSuit suit="spade" size={90} style={{ position: 'absolute', bottom: '40%', left: '10%' }} />
+          <CardSuit suit="diamond" size={70} style={{ position: 'absolute', top: '70%', right: '8%' }} />
+          <CardSuit suit="club" size={60} style={{ position: 'absolute', bottom: '8%', left: '18%' }} />
+
+          {/* 大筹码装饰 */}
+          <div style={{ position: 'absolute', top: '12%', left: '6%', opacity: 0.05, transform: 'rotate(-15deg)' }}><PokerChip size={100} /></div>
+          <div style={{ position: 'absolute', bottom: '12%', right: '6%', opacity: 0.05, transform: 'rotate(20deg)' }}><PokerChip size={90} /></div>
+          <div style={{ position: 'absolute', top: '40%', right: '1%', opacity: 0.04, transform: 'rotate(10deg)' }}><PokerChip size={70} /></div>
 
           <audio ref={audioRef} preload="auto">
             <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleQEOS9PzzIk7AD6v4eSZTwAQgNHsqWkABWq66bF7DwBSpNzHjTMAIYrQ37RrAARptuq4fhAAWKngy5E3ACeS1d+1agAIcrjptYIQAF2s4MyTOAAqltbftmkAC3a67LSCDwBhsOHMlDgALZnX37ZoAA56vOyygA8AZbLhzJQ4AC+b2N+1ZwARfb7srH8OAGm04suUOAAxndjftGYAFIDArKp9DQBttuLKkzcAM5/Z37NkABeEwqunewwAcbjhyZI3ADWB2t+yYwAaiMOnpHoLAHW64ceRNgA3g9vfsGEAHYvEpKF4CgB5vODFjzUAOYbc3q5fACCOxqGedwkAfb7fwow0ADuJ3d2sXQAjkcegm3UIAIC/3b+KNAA9i97cqVsAJpTHnph0BwCEwd27iDMAP43f26daACmXyJuVcgYAh8LcuIYyAEGP4NsOWQAsnMmYknEFAIrE27WEMQBDkeDbTFcAL5/KlI9vBACNxdqygjAARadg3KtWADKhy5GPbgMAkMbZr4AvAEiD4ttqVAA1pMyNjGwCAJPI2KyALgBKheLbZ1IAOKfNioluAQCWydetfC0ATIfj21hQADuqzoaMbQAAmcvWqnssAE6J49tVTgA+rM+Dim0AAJzM1ad6KwBQi+TbUkwAQa/QgYhuAACfzaTelCoAUo3k20hKAESx0X+GbgAAos+j3JEpAFSP5ds/SABAAE6T5ds3RgBJtdJ7gm0AAKnRn9iNJwBYkubbMEMAT7jUeIBtAACt0p3ViSYAWpTo2ypBAAAAAAAA" type="audio/wav" />
@@ -243,6 +364,41 @@
                   </div>
                 </div>
               </div>
+
+              {/* 奖金设置 */}
+              <div style={{ marginBottom: '30px' }}>
+                <h2 style={{ fontSize: '28px', letterSpacing: '4px', marginBottom: '5px', color: '#FF8030' }}>奖金设置</h2>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif' }}>PRIZE SETTINGS</div>
+              </div>
+              
+              <div style={{ background: 'rgba(0,0,0,0.3)', padding: '25px', border: '1px solid rgba(255,128,48,0.2)', borderRadius: '16px', marginBottom: '30px' }}>
+                <div style={{ marginBottom: '15px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>奖金分配比例 <span style={{ fontSize: '10px', fontFamily: 'Arial, sans-serif' }}>DISTRIBUTION</span></span>
+                    <span style={{ color: totalPercent > 100 ? '#e05555' : totalPercent === 100 ? '#50a050' : '#FF8030', fontSize: '14px' }}>已分配: {totalPercent}%</span>
+                  </div>
+                  
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', marginBottom: '15px' }}>
+                    {prizeStructure.map((prize, index) => (
+                      <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,128,48,0.1)', padding: '10px 15px', borderRadius: '10px' }}>
+                        <span style={{ color: '#FF8030', fontSize: '14px', minWidth: '50px' }}>第{prize.place}名</span>
+                        <input 
+                          type="number" 
+                          value={prize.percent} 
+                          onChange={(e) => handlePrizePercentChange(index, e.target.value)}
+                          style={{ ...inputStyle, width: '60px' }}
+                        />
+                        <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px' }}>%</span>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={handleAddPrizePlace} style={{ background: 'rgba(80,160,80,0.3)', border: '1px solid rgba(80,160,80,0.6)', color: '#50a050', padding: '8px 20px', cursor: 'pointer', fontSize: '14px', borderRadius: '8px' }}>+ 添加名次</button>
+                    <button onClick={handleRemovePrizePlace} style={{ background: 'rgba(224,85,85,0.3)', border: '1px solid rgba(224,85,85,0.6)', color: '#e05555', padding: '8px 20px', cursor: 'pointer', fontSize: '14px', borderRadius: '8px' }}>- 减少名次</button>
+                  </div>
+                </div>
+              </div>
               <div style={{ marginBottom: '30px' }}>
                 <h2 style={{ fontSize: '28px', letterSpacing: '4px', marginBottom: '5px', color: '#FF8030' }}>盲注级别设置</h2>
                 <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif' }}>BLIND LEVEL SETTINGS</div>
@@ -282,62 +438,129 @@
               </div>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px', minHeight: isDisplayMode ? 'calc(100vh - 160px)' : 'calc(100vh - 250px)', position: 'relative', zIndex: 10 }}>
-              <div style={{ textAlign: 'center', marginBottom: '15px' }}>
-                <div style={{ fontSize: '42px', letterSpacing: '8px', color: 'rgba(255,255,255,0.8)' }}>第 {currentLevel + 1} 级 / 共 {levels.length} 级</div>
-                <div style={{ fontSize: '18px', letterSpacing: '4px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '8px' }}>LEVEL {currentLevel + 1} OF {levels.length}</div>
+            <div style={{ display: 'flex', padding: '20px 30px', minHeight: isDisplayMode ? 'calc(100vh - 160px)' : 'calc(100vh - 250px)', position: 'relative', zIndex: 10, gap: '25px' }}>
+              
+              {/* 左侧盲注级别列表 */}
+              <div style={{ width: '220px', background: 'rgba(0,0,0,0.4)', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.3)', padding: '20px', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ textAlign: 'center', marginBottom: '15px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,128,48,0.2)' }}>
+                  <div style={{ fontSize: '18px', color: '#FF8030', letterSpacing: '3px', fontWeight: 'bold' }}>盲注级别</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '4px' }}>BLIND LEVELS</div>
+                </div>
+                <div style={{ flex: 1, overflowY: 'auto' }}>
+                  {levels.map((level, index) => (
+                    <div key={index} style={{ 
+                      padding: '10px 12px', 
+                      marginBottom: '6px',
+                      background: index === currentLevel ? 'rgba(255,128,48,0.25)' : index < currentLevel ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.05)',
+                      borderRadius: '10px',
+                      border: index === currentLevel ? '2px solid #FF8030' : '1px solid rgba(255,255,255,0.05)',
+                      opacity: index < currentLevel ? 0.5 : 1,
+                      transition: 'all 0.3s ease'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '14px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.6)', fontWeight: index === currentLevel ? 'bold' : 'normal' }}>L{index + 1}</span>
+                        <span style={{ fontSize: '16px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.8)', fontWeight: 'bold' }}>{level.smallBlind}/{level.bigBlind}</span>
+                      </div>
+                      {level.ante > 0 && (
+                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', textAlign: 'right', marginTop: '2px' }}>前注 {level.ante}</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div style={{ width: '80%', maxWidth: '800px', height: '8px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: '30px', borderRadius: '10px' }}>
-                <div style={{ width: `${progress}%`, height: '100%', background: isLowTime ? '#e05555' : '#FF8030', transition: 'width 1s linear', opacity: 0.8 }} />
-              </div>
+              {/* 中间主内容区 */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                  <div style={{ fontSize: '48px', letterSpacing: '10px', color: 'rgba(255,255,255,0.85)' }}>第 {currentLevel + 1} 级 / 共 {levels.length} 级</div>
+                  <div style={{ fontSize: '20px', letterSpacing: '5px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '10px' }}>LEVEL {currentLevel + 1} OF {levels.length}</div>
+                </div>
 
-              <div style={{ background: 'rgba(0,0,0,0.4)', padding: '25px 60px', marginBottom: '30px', borderRadius: '24px', border: '1px solid rgba(255,128,48,0.2)', minWidth: '450px', textAlign: 'center', position: 'relative' }}>
-                {!isRunning && timeLeft > 0 && timeLeft < current.duration * 60 && (
-                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.95)', padding: '40px 80px', borderRadius: '24px', border: '3px solid #FF8030', zIndex: 20 }}>
-                    <div style={{ fontSize: '56px', color: '#FF8030', letterSpacing: '12px', marginBottom: '10px' }}>比赛暂停</div>
-                    <div style={{ fontSize: '20px', color: 'rgba(255,255,255,0.5)', letterSpacing: '6px', fontFamily: 'Arial, sans-serif' }}>GAME PAUSED</div>
+                <div style={{ width: '90%', maxWidth: '750px', height: '10px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: '30px', borderRadius: '10px' }}>
+                  <div style={{ width: `${progress}%`, height: '100%', background: isLowTime ? '#e05555' : '#FF8030', transition: 'width 1s linear', opacity: 0.9 }} />
+                </div>
+
+                <div style={{ background: 'rgba(0,0,0,0.5)', padding: '35px 80px', marginBottom: '35px', borderRadius: '28px', border: '2px solid rgba(255,128,48,0.3)', minWidth: '500px', textAlign: 'center', position: 'relative' }}>
+                  {!isRunning && timeLeft > 0 && timeLeft < current.duration * 60 && (
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.95)', padding: '45px 90px', borderRadius: '28px', border: '3px solid #FF8030', zIndex: 20 }}>
+                      <div style={{ fontSize: '64px', color: '#FF8030', letterSpacing: '14px', marginBottom: '12px' }}>比赛暂停</div>
+                      <div style={{ fontSize: '22px', color: 'rgba(255,255,255,0.5)', letterSpacing: '8px', fontFamily: 'Arial, sans-serif' }}>GAME PAUSED</div>
+                    </div>
+                  )}
+                  <div style={{ fontSize: 'clamp(100px, 18vw, 180px)', fontWeight: 'bold', letterSpacing: '20px', color: isLowTime ? '#e05555' : '#FF8030', textShadow: isLowTime ? '0 0 40px rgba(224, 85, 85, 0.5)' : '0 0 30px rgba(255, 128, 48, 0.4)' }}>{formatTime(timeLeft)}</div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '20px', marginBottom: '25px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: '20px 18px', width: '150px', borderRadius: '18px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                    <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '3px' }}>小盲</div>
+                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '10px' }}>SMALL BLIND</div>
+                    <div style={{ fontSize: '44px', color: '#FF8030', fontWeight: 'bold' }}>{current.smallBlind}</div>
+                  </div>
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: '20px 18px', width: '150px', borderRadius: '18px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                    <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '3px' }}>大盲</div>
+                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '10px' }}>BIG BLIND</div>
+                    <div style={{ fontSize: '44px', color: '#FF8030', fontWeight: 'bold' }}>{current.bigBlind}</div>
+                  </div>
+                  {current.ante > 0 && (
+                    <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: '20px 18px', width: '150px', borderRadius: '18px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                      <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '3px' }}>前注</div>
+                      <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '10px' }}>ANTE</div>
+                      <div style={{ fontSize: '44px', color: '#FF8030', fontWeight: 'bold' }}>{current.ante}</div>
+                    </div>
+                  )}
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: '20px 18px', width: '150px', borderRadius: '18px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                    <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '3px' }}>参赛</div>
+                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '10px' }}>PLAYERS</div>
+                    <div style={{ fontSize: '44px', color: '#FF8030', fontWeight: 'bold' }}>{remainingPlayers}<span style={{ fontSize: '22px', color: 'rgba(255,255,255,0.4)' }}>/{totalPlayers}</span></div>
+                  </div>
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: '20px 18px', width: '150px', borderRadius: '18px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                    <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '3px' }}>均码</div>
+                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '10px' }}>AVG CHIPS</div>
+                    <div style={{ fontSize: '32px', color: '#FF8030', fontWeight: 'bold' }}>{averageChips.toLocaleString()}</div>
+                  </div>
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: '20px 18px', width: '150px', borderRadius: '18px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                    <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '3px' }}>总码</div>
+                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '10px' }}>TOTAL</div>
+                    <div style={{ fontSize: '32px', color: '#FF8030', fontWeight: 'bold' }}>{totalChips.toLocaleString()}</div>
+                  </div>
+                </div>
+
+                {next && (
+                  <div style={{ background: 'rgba(0,0,0,0.4)', padding: '14px 40px', border: '1px solid rgba(255,128,48,0.2)', textAlign: 'center', borderRadius: '14px', minWidth: '350px' }}>
+                    <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.5)', letterSpacing: '3px' }}>下一级 <span style={{ fontSize: '11px', fontFamily: 'Arial, sans-serif' }}>NEXT LEVEL</span></div>
+                    <span style={{ fontSize: '26px', color: 'rgba(255,128,48,0.85)', letterSpacing: '4px' }}>{next.smallBlind} / {next.bigBlind}{next.ante > 0 && ` (前注 ${next.ante})`}</span>
                   </div>
                 )}
-                <div style={{ fontSize: 'clamp(80px, 15vw, 150px)', fontWeight: 'bold', letterSpacing: '15px', color: isLowTime ? '#e05555' : '#FF8030', textShadow: isLowTime ? '0 0 30px rgba(224, 85, 85, 0.4)' : '0 0 20px rgba(255, 128, 48, 0.3)' }}>{formatTime(timeLeft)}</div>
               </div>
 
-              <div style={{ display: 'flex', gap: '20px', marginBottom: '25px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.4)', padding: '20px 15px', width: '150px', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.2)' }}>
-                  <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', letterSpacing: '2px', marginBottom: '2px' }}>小盲</div>
-                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '8px' }}>SMALL BLIND</div>
-                  <div style={{ fontSize: '46px', color: '#FF8030' }}>{current.smallBlind}</div>
+              {/* 右侧奖金分配区 */}
+              <div style={{ width: '220px', background: 'rgba(0,0,0,0.4)', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.3)', padding: '20px', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ textAlign: 'center', marginBottom: '15px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,128,48,0.2)' }}>
+                  <div style={{ fontSize: '18px', color: '#FF8030', letterSpacing: '3px', fontWeight: 'bold' }}>奖金分配</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '4px' }}>PRIZE POOL</div>
+                  <div style={{ fontSize: '28px', color: '#FF8030', marginTop: '10px', fontWeight: 'bold' }}>{totalChips.toLocaleString()}</div>
                 </div>
-                <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.4)', padding: '20px 15px', width: '150px', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.2)' }}>
-                  <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', letterSpacing: '2px', marginBottom: '2px' }}>大盲</div>
-                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '8px' }}>BIG BLIND</div>
-                  <div style={{ fontSize: '46px', color: '#FF8030' }}>{current.bigBlind}</div>
-                </div>
-                {current.ante > 0 && (
-                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.4)', padding: '20px 15px', width: '150px', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.2)' }}>
-                    <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', letterSpacing: '2px', marginBottom: '2px' }}>前注</div>
-                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '8px' }}>ANTE</div>
-                    <div style={{ fontSize: '46px', color: '#FF8030' }}>{current.ante}</div>
-                  </div>
-                )}
-                <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.4)', padding: '20px 15px', width: '150px', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.2)' }}>
-                  <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', letterSpacing: '2px', marginBottom: '2px' }}>参赛</div>
-                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '8px' }}>PLAYERS</div>
-                  <div style={{ fontSize: '46px', color: '#FF8030' }}>{remainingPlayers}<span style={{ fontSize: '24px', color: 'rgba(255,255,255,0.4)' }}>/{totalPlayers}</span></div>
-                </div>
-                <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.4)', padding: '20px 15px', width: '150px', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.2)' }}>
-                  <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', letterSpacing: '2px', marginBottom: '2px' }}>均码</div>
-                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '8px' }}>AVG CHIPS</div>
-                  <div style={{ fontSize: '32px', color: '#FF8030' }}>{averageChips.toLocaleString()}</div>
+                <div style={{ flex: 1, overflowY: 'auto' }}>
+                  {prizeStructure.map((prize, index) => (
+                    <div key={index} style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      padding: '12px 10px', 
+                      marginBottom: '8px',
+                      background: index === 0 ? 'rgba(255,128,48,0.15)' : index === 1 ? 'rgba(255,128,48,0.08)' : 'rgba(255,255,255,0.03)',
+                      borderRadius: '10px',
+                      border: index === 0 ? '1px solid rgba(255,128,48,0.4)' : '1px solid rgba(255,255,255,0.05)'
+                    }}>
+                      <div>
+                        <div style={{ fontSize: '16px', color: index === 0 ? '#FF8030' : 'rgba(255,255,255,0.8)', fontWeight: index < 3 ? 'bold' : 'normal' }}>第{prize.place}名</div>
+                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>{prize.percent}%</div>
+                      </div>
+                      <div style={{ fontSize: '22px', color: index === 0 ? '#FF8030' : 'rgba(255,255,255,0.9)', fontWeight: 'bold' }}>{Math.round(totalChips * prize.percent / 100).toLocaleString()}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
-
-              {next && (
-                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '12px 40px', marginBottom: '20px', border: '1px solid rgba(255,128,48,0.15)', textAlign: 'center', borderRadius: '16px', minWidth: '350px' }}>
-                  <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', letterSpacing: '2px' }}>下一级 <span style={{ fontSize: '10px', fontFamily: 'Arial, sans-serif' }}>NEXT LEVEL</span></div>
-                  <span style={{ fontSize: '22px', color: 'rgba(255,128,48,0.8)', letterSpacing: '3px' }}>{next.smallBlind} / {next.bigBlind}{next.ante > 0 && ` (前注 ${next.ante})`}</span>
-                </div>
-              )}
             </div>
           )}
 
@@ -357,6 +580,12 @@
                       <button onClick={handlePlayerOut} style={{ background: '#e05555', border: 'none', color: '#fff', width: '36px', height: '36px', cursor: 'pointer', fontSize: '20px', borderRadius: '8px', fontWeight: 'bold' }}>-</button>
                       <span style={{ color: '#FF8030', fontSize: '20px', minWidth: '40px', textAlign: 'center' }}>{remainingPlayers}</span>
                       <button onClick={handlePlayerBack} style={{ background: '#50a050', border: 'none', color: '#fff', width: '36px', height: '36px', cursor: 'pointer', fontSize: '20px', borderRadius: '8px', fontWeight: 'bold' }}>+</button>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.3)', padding: '8px 15px', borderRadius: '12px' }}>
+                      <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', textAlign: 'center' }}>筹码<br/><span style={{ fontSize: '9px' }}>CHIPS</span></span>
+                      <button onClick={handleChipsRemove} style={{ background: '#e05555', border: 'none', color: '#fff', width: '36px', height: '36px', cursor: 'pointer', fontSize: '20px', borderRadius: '8px', fontWeight: 'bold' }}>-</button>
+                      <span style={{ color: '#FF8030', fontSize: '16px', minWidth: '70px', textAlign: 'center' }}>{(totalChips/1000).toFixed(0)}K</span>
+                      <button onClick={handleChipsAdd} style={{ background: '#50a050', border: 'none', color: '#fff', width: '36px', height: '36px', cursor: 'pointer', fontSize: '20px', borderRadius: '8px', fontWeight: 'bold' }}>+</button>
                     </div>
                     <div style={{ width: '1px', height: '40px', background: 'rgba(255,128,48,0.3)' }} />
                     <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
