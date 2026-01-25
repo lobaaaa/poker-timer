@@ -137,17 +137,19 @@
         { place: 2, percent: 30 },
         { place: 3, percent: 20 },
       ]);
+      const [showLevelUp, setShowLevelUp] = useState(false);
+      const [newLevelInfo, setNewLevelInfo] = useState(null);
       const [currentTime, setCurrentTime] = useState(new Date());
       const audioRef = useRef(null);
       const lastSyncRef = useRef(0);
 
       const syncData = () => {
         if (!isDisplayMode) {
-          syncToStorage({ levels, currentLevel, timeLeft, isRunning, totalPlayers, remainingPlayers, startingChips, totalChips, prizeStructure });
+          syncToStorage({ levels, currentLevel, timeLeft, isRunning, totalPlayers, remainingPlayers, startingChips, totalChips, prizeStructure, showLevelUp, newLevelInfo });
         }
       };
 
-      useEffect(() => { syncData(); }, [levels, currentLevel, timeLeft, isRunning, totalPlayers, remainingPlayers, startingChips, totalChips, prizeStructure]);
+      useEffect(() => { syncData(); }, [levels, currentLevel, timeLeft, isRunning, totalPlayers, remainingPlayers, startingChips, totalChips, prizeStructure, showLevelUp, newLevelInfo]);
 
       useEffect(() => {
         if (isDisplayMode) {
@@ -164,6 +166,8 @@
               setStartingChips(data.startingChips);
               setTotalChips(data.totalChips);
               if (data.prizeStructure !== undefined) setPrizeStructure(data.prizeStructure);
+              if (data.showLevelUp !== undefined) setShowLevelUp(data.showLevelUp);
+              if (data.newLevelInfo !== undefined) setNewLevelInfo(data.newLevelInfo);
             }
           };
           const interval = setInterval(handleStorageChange, 100);
@@ -181,6 +185,18 @@
       const formatBeijingTime = () => currentTime.toLocaleTimeString('zh-CN', { timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
       const formatBeijingDate = () => currentTime.toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', weekday: 'short' });
 
+      // 语音提示函数
+      const speakText = (text) => {
+        if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'zh-CN';
+          utterance.rate = 0.9;
+          utterance.pitch = 1;
+          utterance.volume = 1;
+          window.speechSynthesis.speak(utterance);
+        }
+      };
+
       useEffect(() => {
         if (isDisplayMode) return;
         let interval = null;
@@ -188,7 +204,26 @@
           interval = setInterval(() => setTimeLeft((time) => time - 1), 1000);
         } else if (timeLeft === 0 && isRunning) {
           if (audioRef.current) audioRef.current.play().catch(() => {});
+          // 语音提示盲注升级
+          speakText('盲注升级');
+          
           if (currentLevel < levels.length - 1) {
+            const nextLevel = levels[currentLevel + 1];
+            // 显示升级弹窗
+            setNewLevelInfo({
+              level: currentLevel + 2,
+              smallBlind: nextLevel.smallBlind,
+              bigBlind: nextLevel.bigBlind,
+              ante: nextLevel.ante
+            });
+            setShowLevelUp(true);
+            
+            // 5秒后自动关闭弹窗
+            setTimeout(() => {
+              setShowLevelUp(false);
+              setNewLevelInfo(null);
+            }, 5000);
+            
             setCurrentLevel((prev) => prev + 1);
             setTimeLeft(levels[currentLevel + 1].duration * 60);
           } else {
@@ -441,28 +476,28 @@
             <div style={{ display: 'flex', padding: isDisplayMode ? '15px 25px' : '20px 30px', height: isDisplayMode ? 'calc(100vh - 140px)' : 'auto', minHeight: isDisplayMode ? 'auto' : 'calc(100vh - 250px)', position: 'relative', zIndex: 10, gap: '20px', overflow: 'hidden' }}>
               
               {/* 左侧盲注级别列表 */}
-              <div style={{ width: isDisplayMode ? '240px' : '280px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.3)', padding: isDisplayMode ? '15px' : '25px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                <div style={{ textAlign: 'center', marginBottom: isDisplayMode ? '10px' : '18px', paddingBottom: isDisplayMode ? '8px' : '15px', borderBottom: '1px solid rgba(255,128,48,0.2)', flexShrink: 0 }}>
-                  <div style={{ fontSize: isDisplayMode ? '20px' : '24px', color: '#FF8030', letterSpacing: '4px', fontWeight: 'bold' }}>盲注级别</div>
-                  <div style={{ fontSize: isDisplayMode ? '10px' : '13px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '4px' }}>BLIND LEVELS</div>
+              <div style={{ width: isDisplayMode ? '280px' : '320px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.3)', padding: isDisplayMode ? '12px' : '25px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div style={{ textAlign: 'center', marginBottom: isDisplayMode ? '8px' : '18px', paddingBottom: isDisplayMode ? '6px' : '15px', borderBottom: '1px solid rgba(255,128,48,0.2)', flexShrink: 0 }}>
+                  <div style={{ fontSize: isDisplayMode ? '18px' : '24px', color: '#FF8030', letterSpacing: '4px', fontWeight: 'bold' }}>盲注级别</div>
+                  <div style={{ fontSize: isDisplayMode ? '9px' : '13px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '3px' }}>BLIND LEVELS</div>
                 </div>
-                <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+                <div style={{ flex: 1, overflowY: isDisplayMode ? 'hidden' : 'auto', overflowX: 'hidden' }}>
                   {levels.map((level, index) => (
                     <div key={index} style={{ 
-                      padding: isDisplayMode ? '8px 10px' : '14px 16px', 
-                      marginBottom: isDisplayMode ? '4px' : '8px',
+                      padding: isDisplayMode ? '6px 10px' : '14px 16px', 
+                      marginBottom: isDisplayMode ? '3px' : '8px',
                       background: index === currentLevel ? 'rgba(255,128,48,0.25)' : index < currentLevel ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.05)',
-                      borderRadius: '10px',
+                      borderRadius: isDisplayMode ? '8px' : '10px',
                       border: index === currentLevel ? '2px solid #FF8030' : '1px solid rgba(255,255,255,0.05)',
                       opacity: index < currentLevel ? 0.5 : 1,
                       transition: 'all 0.3s ease'
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: isDisplayMode ? '14px' : '18px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.6)', fontWeight: index === currentLevel ? 'bold' : 'normal' }}>L{index + 1}</span>
-                        <span style={{ fontSize: isDisplayMode ? '16px' : '22px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.8)', fontWeight: 'bold' }}>{level.smallBlind}/{level.bigBlind}</span>
+                        <span style={{ fontSize: isDisplayMode ? '14px' : '22px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.6)', fontWeight: index === currentLevel ? 'bold' : 'normal' }}>L{index + 1}</span>
+                        <span style={{ fontSize: isDisplayMode ? '16px' : '28px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.8)', fontWeight: 'bold' }}>{level.smallBlind}/{level.bigBlind}</span>
                       </div>
                       {level.ante > 0 && (
-                        <div style={{ fontSize: isDisplayMode ? '10px' : '14px', color: 'rgba(255,255,255,0.4)', textAlign: 'right', marginTop: '2px' }}>前注 {level.ante}</div>
+                        <div style={{ fontSize: isDisplayMode ? '11px' : '18px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.5)', textAlign: 'right', marginTop: isDisplayMode ? '2px' : '4px' }}>前注 {level.ante}</div>
                       )}
                     </div>
                   ))}
@@ -470,65 +505,84 @@
               </div>
 
               {/* 中间主内容区 */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                <div style={{ textAlign: 'center', marginBottom: isDisplayMode ? '10px' : '20px' }}>
-                  <div style={{ fontSize: isDisplayMode ? '36px' : '48px', letterSpacing: '10px', color: 'rgba(255,255,255,0.85)' }}>第 {currentLevel + 1} 级 / 共 {levels.length} 级</div>
-                  <div style={{ fontSize: isDisplayMode ? '14px' : '20px', letterSpacing: '5px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '6px' }}>LEVEL {currentLevel + 1} OF {levels.length}</div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' }}>
+                {/* 水印背景 */}
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '50%', 
+                  left: '50%', 
+                  transform: 'translate(-50%, -50%)', 
+                  fontSize: '180px', 
+                  fontWeight: 'bold',
+                  color: 'rgba(255, 128, 48, 0.04)',
+                  letterSpacing: '30px',
+                  whiteSpace: 'nowrap',
+                  fontFamily: '"Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif',
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                  zIndex: 0
+                }}>
+                  卡纳酒吧
+                </div>
+                
+                <div style={{ textAlign: 'center', marginBottom: isDisplayMode ? '8px' : '20px', position: 'relative', zIndex: 1 }}>
+                  <div style={{ fontSize: isDisplayMode ? '42px' : '48px', letterSpacing: '10px', color: 'rgba(255,255,255,0.85)' }}>第 {currentLevel + 1} 级 / 共 {levels.length} 级</div>
+                  <div style={{ fontSize: isDisplayMode ? '16px' : '20px', letterSpacing: '5px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '6px' }}>LEVEL {currentLevel + 1} OF {levels.length}</div>
                 </div>
 
-                <div style={{ width: '90%', maxWidth: '650px', height: '8px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: isDisplayMode ? '15px' : '30px', borderRadius: '10px' }}>
+                <div style={{ width: '95%', maxWidth: '750px', height: isDisplayMode ? '10px' : '8px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: isDisplayMode ? '12px' : '30px', borderRadius: '10px', position: 'relative', zIndex: 1 }}>
                   <div style={{ width: `${progress}%`, height: '100%', background: isLowTime ? '#e05555' : '#FF8030', transition: 'width 1s linear', opacity: 0.9 }} />
                 </div>
 
-                <div style={{ background: 'rgba(0,0,0,0.5)', padding: isDisplayMode ? '15px 40px' : '35px 80px', marginBottom: isDisplayMode ? '12px' : '35px', borderRadius: '24px', border: '2px solid rgba(255,128,48,0.3)', textAlign: 'center', position: 'relative' }}>
+                <div style={{ background: 'rgba(0,0,0,0.5)', padding: isDisplayMode ? '20px 60px' : '35px 80px', marginBottom: isDisplayMode ? '15px' : '35px', borderRadius: '24px', border: '2px solid rgba(255,128,48,0.3)', textAlign: 'center', position: 'relative', zIndex: 1 }}>
                   {!isRunning && timeLeft > 0 && timeLeft < current.duration * 60 && (
                     <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.95)', padding: isDisplayMode ? '30px 60px' : '45px 90px', borderRadius: '28px', border: '3px solid #FF8030', zIndex: 20 }}>
                       <div style={{ fontSize: isDisplayMode ? '48px' : '64px', color: '#FF8030', letterSpacing: '14px', marginBottom: '12px' }}>比赛暂停</div>
                       <div style={{ fontSize: isDisplayMode ? '16px' : '22px', color: 'rgba(255,255,255,0.5)', letterSpacing: '8px', fontFamily: 'Arial, sans-serif' }}>GAME PAUSED</div>
                     </div>
                   )}
-                  <div style={{ fontSize: isDisplayMode ? 'clamp(120px, 20vw, 200px)' : 'clamp(100px, 18vw, 180px)', fontWeight: 'bold', letterSpacing: '25px', color: isLowTime ? '#e05555' : '#FF8030', textShadow: isLowTime ? '0 0 50px rgba(224, 85, 85, 0.6)' : '0 0 40px rgba(255, 128, 48, 0.5)' }}>{formatTime(timeLeft)}</div>
+                  <div style={{ fontSize: isDisplayMode ? 'clamp(140px, 22vw, 220px)' : 'clamp(100px, 18vw, 180px)', fontWeight: 'bold', letterSpacing: '25px', color: isLowTime ? '#e05555' : '#FF8030', textShadow: isLowTime ? '0 0 50px rgba(224, 85, 85, 0.6)' : '0 0 40px rgba(255, 128, 48, 0.5)' }}>{formatTime(timeLeft)}</div>
                 </div>
 
-                <div style={{ display: 'flex', gap: isDisplayMode ? '12px' : '20px', marginBottom: isDisplayMode ? '12px' : '25px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '12px 10px' : '20px 18px', width: isDisplayMode ? '120px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
-                    <div style={{ fontSize: isDisplayMode ? '12px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>小盲</div>
-                    <div style={{ fontSize: isDisplayMode ? '8px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '4px' : '10px' }}>SMALL BLIND</div>
-                    <div style={{ fontSize: isDisplayMode ? '32px' : '44px', color: '#FF8030', fontWeight: 'bold' }}>{current.smallBlind}</div>
+                <div style={{ display: 'flex', gap: isDisplayMode ? '15px' : '20px', marginBottom: isDisplayMode ? '15px' : '25px', flexWrap: 'wrap', justifyContent: 'center', position: 'relative', zIndex: 1 }}>
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '15px 12px' : '20px 18px', width: isDisplayMode ? '140px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                    <div style={{ fontSize: isDisplayMode ? '14px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>小盲</div>
+                    <div style={{ fontSize: isDisplayMode ? '10px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '6px' : '10px' }}>SMALL BLIND</div>
+                    <div style={{ fontSize: isDisplayMode ? '40px' : '44px', color: '#FF8030', fontWeight: 'bold' }}>{current.smallBlind}</div>
                   </div>
-                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '12px 10px' : '20px 18px', width: isDisplayMode ? '120px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
-                    <div style={{ fontSize: isDisplayMode ? '12px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>大盲</div>
-                    <div style={{ fontSize: isDisplayMode ? '8px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '4px' : '10px' }}>BIG BLIND</div>
-                    <div style={{ fontSize: isDisplayMode ? '32px' : '44px', color: '#FF8030', fontWeight: 'bold' }}>{current.bigBlind}</div>
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '15px 12px' : '20px 18px', width: isDisplayMode ? '140px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                    <div style={{ fontSize: isDisplayMode ? '14px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>大盲</div>
+                    <div style={{ fontSize: isDisplayMode ? '10px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '6px' : '10px' }}>BIG BLIND</div>
+                    <div style={{ fontSize: isDisplayMode ? '40px' : '44px', color: '#FF8030', fontWeight: 'bold' }}>{current.bigBlind}</div>
                   </div>
                   {current.ante > 0 && (
-                    <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '12px 10px' : '20px 18px', width: isDisplayMode ? '120px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
-                      <div style={{ fontSize: isDisplayMode ? '12px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>前注</div>
-                      <div style={{ fontSize: isDisplayMode ? '8px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '4px' : '10px' }}>ANTE</div>
-                      <div style={{ fontSize: isDisplayMode ? '32px' : '44px', color: '#FF8030', fontWeight: 'bold' }}>{current.ante}</div>
+                    <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '15px 12px' : '20px 18px', width: isDisplayMode ? '140px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                      <div style={{ fontSize: isDisplayMode ? '14px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>前注</div>
+                      <div style={{ fontSize: isDisplayMode ? '10px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '6px' : '10px' }}>ANTE</div>
+                      <div style={{ fontSize: isDisplayMode ? '40px' : '44px', color: '#FF8030', fontWeight: 'bold' }}>{current.ante}</div>
                     </div>
                   )}
-                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '12px 10px' : '20px 18px', width: isDisplayMode ? '120px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
-                    <div style={{ fontSize: isDisplayMode ? '12px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>参赛</div>
-                    <div style={{ fontSize: isDisplayMode ? '8px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '4px' : '10px' }}>PLAYERS</div>
-                    <div style={{ fontSize: isDisplayMode ? '32px' : '44px', color: '#FF8030', fontWeight: 'bold' }}>{remainingPlayers}<span style={{ fontSize: isDisplayMode ? '16px' : '22px', color: 'rgba(255,255,255,0.4)' }}>/{totalPlayers}</span></div>
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '15px 12px' : '20px 18px', width: isDisplayMode ? '140px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                    <div style={{ fontSize: isDisplayMode ? '14px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>参赛</div>
+                    <div style={{ fontSize: isDisplayMode ? '10px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '6px' : '10px' }}>PLAYERS</div>
+                    <div style={{ fontSize: isDisplayMode ? '40px' : '44px', color: '#FF8030', fontWeight: 'bold' }}>{remainingPlayers}<span style={{ fontSize: isDisplayMode ? '20px' : '22px', color: 'rgba(255,255,255,0.4)' }}>/{totalPlayers}</span></div>
                   </div>
-                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '12px 10px' : '20px 18px', width: isDisplayMode ? '120px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
-                    <div style={{ fontSize: isDisplayMode ? '12px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>均码</div>
-                    <div style={{ fontSize: isDisplayMode ? '8px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '4px' : '10px' }}>AVG CHIPS</div>
-                    <div style={{ fontSize: isDisplayMode ? '24px' : '32px', color: '#FF8030', fontWeight: 'bold' }}>{averageChips.toLocaleString()}</div>
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '15px 12px' : '20px 18px', width: isDisplayMode ? '140px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                    <div style={{ fontSize: isDisplayMode ? '14px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>均码</div>
+                    <div style={{ fontSize: isDisplayMode ? '10px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '6px' : '10px' }}>AVG CHIPS</div>
+                    <div style={{ fontSize: isDisplayMode ? '28px' : '32px', color: '#FF8030', fontWeight: 'bold' }}>{averageChips.toLocaleString()}</div>
                   </div>
-                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '12px 10px' : '20px 18px', width: isDisplayMode ? '120px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
-                    <div style={{ fontSize: isDisplayMode ? '12px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>总码</div>
-                    <div style={{ fontSize: isDisplayMode ? '8px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '4px' : '10px' }}>TOTAL</div>
-                    <div style={{ fontSize: isDisplayMode ? '24px' : '32px', color: '#FF8030', fontWeight: 'bold' }}>{totalChips.toLocaleString()}</div>
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '15px 12px' : '20px 18px', width: isDisplayMode ? '140px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                    <div style={{ fontSize: isDisplayMode ? '14px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>总码</div>
+                    <div style={{ fontSize: isDisplayMode ? '10px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '6px' : '10px' }}>TOTAL</div>
+                    <div style={{ fontSize: isDisplayMode ? '28px' : '32px', color: '#FF8030', fontWeight: 'bold' }}>{totalChips.toLocaleString()}</div>
                   </div>
                 </div>
 
                 {next && (
-                  <div style={{ background: 'rgba(0,0,0,0.4)', padding: isDisplayMode ? '10px 30px' : '14px 40px', border: '1px solid rgba(255,128,48,0.2)', textAlign: 'center', borderRadius: '14px' }}>
-                    <div style={{ fontSize: isDisplayMode ? '12px' : '15px', color: 'rgba(255,255,255,0.5)', letterSpacing: '3px' }}>下一级 <span style={{ fontSize: isDisplayMode ? '9px' : '11px', fontFamily: 'Arial, sans-serif' }}>NEXT LEVEL</span></div>
-                    <span style={{ fontSize: isDisplayMode ? '20px' : '26px', color: 'rgba(255,128,48,0.85)', letterSpacing: '4px' }}>{next.smallBlind} / {next.bigBlind}{next.ante > 0 && ` (前注 ${next.ante})`}</span>
+                  <div style={{ background: 'rgba(0,0,0,0.4)', padding: isDisplayMode ? '12px 35px' : '14px 40px', border: '1px solid rgba(255,128,48,0.2)', textAlign: 'center', borderRadius: '14px', position: 'relative', zIndex: 1 }}>
+                    <div style={{ fontSize: isDisplayMode ? '14px' : '15px', color: 'rgba(255,255,255,0.5)', letterSpacing: '3px' }}>下一级 <span style={{ fontSize: isDisplayMode ? '10px' : '11px', fontFamily: 'Arial, sans-serif' }}>NEXT LEVEL</span></div>
+                    <span style={{ fontSize: isDisplayMode ? '24px' : '26px', color: 'rgba(255,128,48,0.85)', letterSpacing: '4px' }}>{next.smallBlind} / {next.bigBlind}{next.ante > 0 && ` (前注 ${next.ante})`}</span>
                   </div>
                 )}
               </div>
@@ -622,7 +676,98 @@
           <style>{`
             input:focus { outline: none; border-color: #FF8030 !important; box-shadow: 0 0 10px rgba(255, 128, 48, 0.3); }
             button:hover { opacity: 0.9; }
+            @keyframes levelUpPulse {
+              0%, 100% { transform: translate(-50%, -50%) scale(1); }
+              50% { transform: translate(-50%, -50%) scale(1.05); }
+            }
+            @keyframes borderGlow {
+              0%, 100% { box-shadow: 0 0 30px rgba(255, 128, 48, 0.5), inset 0 0 30px rgba(255, 128, 48, 0.1); }
+              50% { box-shadow: 0 0 60px rgba(255, 128, 48, 0.8), inset 0 0 60px rgba(255, 128, 48, 0.2); }
+            }
+            @keyframes textGlow {
+              0%, 100% { text-shadow: 0 0 20px rgba(255, 128, 48, 0.8); }
+              50% { text-shadow: 0 0 40px rgba(255, 128, 48, 1), 0 0 80px rgba(255, 128, 48, 0.5); }
+            }
           `}</style>
+
+          {/* 盲注升级全屏弹窗 */}
+          {showLevelUp && newLevelInfo && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.9)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 1000,
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                textAlign: 'center',
+                animation: 'levelUpPulse 1s ease-in-out infinite',
+              }}>
+                <div style={{
+                  fontSize: '80px',
+                  color: '#FF8030',
+                  letterSpacing: '20px',
+                  marginBottom: '30px',
+                  fontWeight: 'bold',
+                  animation: 'textGlow 1.5s ease-in-out infinite',
+                }}>
+                  盲注升级
+                </div>
+                <div style={{
+                  fontSize: '36px',
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  letterSpacing: '8px',
+                  marginBottom: '50px',
+                  fontFamily: 'Arial, sans-serif',
+                }}>
+                  LEVEL UP
+                </div>
+                <div style={{
+                  background: 'rgba(255, 128, 48, 0.15)',
+                  border: '3px solid #FF8030',
+                  borderRadius: '30px',
+                  padding: '40px 80px',
+                  animation: 'borderGlow 1.5s ease-in-out infinite',
+                }}>
+                  <div style={{
+                    fontSize: '48px',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    marginBottom: '20px',
+                    letterSpacing: '5px',
+                  }}>
+                    第 {newLevelInfo.level} 级
+                  </div>
+                  <div style={{
+                    fontSize: '100px',
+                    color: '#FF8030',
+                    fontWeight: 'bold',
+                    letterSpacing: '10px',
+                  }}>
+                    {newLevelInfo.smallBlind} / {newLevelInfo.bigBlind}
+                  </div>
+                  {newLevelInfo.ante > 0 && (
+                    <div style={{
+                      fontSize: '36px',
+                      color: 'rgba(255, 255, 255, 0.6)',
+                      marginTop: '20px',
+                      letterSpacing: '5px',
+                    }}>
+                      前注 {newLevelInfo.ante}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
