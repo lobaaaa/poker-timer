@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>卡纳酒吧德扑赛事 - Canary Bar Poker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+      color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 背景装饰 */
+    .bg-decoration {
+      position: absolute;
+      font-size: 200px;
+      opacity: 0.03;
+      pointer-events: none;
+      user-select: none;
+    }
+    .bg-1 { top: 5%; left: 5%; color: #FF8030; }
+    .bg-2 { top: 60%; right: 5%; color: #fff; }
+    .bg-3 { bottom: 10%; left: 15%; color: #FF8030; }
+    .bg-4 { top: 20%; right: 20%; color: #fff; }
+
+    /* Logo */
+    .logo {
+      width: 180px;
+      height: 180px;
+      margin-bottom: 30px;
+      filter: drop-shadow(0 0 20px rgba(255, 128, 48, 0.3));
+    }
+
+    /* 标题 */
+    .title {
+      font-size: 56px;
+      font-weight: bold;
+      color: #FF8030;
+      letter-spacing: 12px;
+      margin-bottom: 10px;
+      text-shadow: 0 0 30px rgba(255, 128, 48, 0.3);
+    }
+    .subtitle {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.5);
+      letter-spacing: 8px;
+      font-family: Arial, sans-serif;
+      margin-bottom: 60px;
+    }
+
+    /* 按钮容器 */
+    .buttons {
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    /* 按钮样式 */
+    .btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 280px;
+      height: 200px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px solid rgba(255, 128, 48, 0.3);
+      border-radius: 24px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn:hover {
+      border-color: #FF8030;
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(255, 128, 48, 0.2);
+    }
+    .btn:hover .btn-bg {
+      opacity: 0.15;
+    }
+    .btn-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #FF8030 0%, #ff6000 100%);
+      opacity: 0.05;
+      transition: opacity 0.3s ease;
+    }
+
+    .btn-icon {
+      font-size: 50px;
+      margin-bottom: 15px;
+      position: relative;
+      z-index: 1;
+    }
+    .btn-title {
+      font-size: 28px;
+      font-weight: bold;
+      color: #FF8030;
+      letter-spacing: 4px;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+    .btn-subtitle {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      letter-spacing: 3px;
+      font-family: Arial, sans-serif;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* 底部信息 */
+    .footer {
+      margin-top: 80px;
+      text-align: center;
+    }
+    .footer-text {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.3);
+      letter-spacing: 2px;
+    }
+    .footer-location {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 10px;
+    }
+
+    /* 响应式 */
+    @media (max-width: 700px) {
+      .title { font-size: 36px; letter-spacing: 6px; }
+      .subtitle { font-size: 14px; letter-spacing: 4px; }
+      .buttons { gap: 20px; }
+      .btn { width: 240px; height: 170px; }
+      .btn-title { font-size: 24px; }
+      .logo { width: 140px; height: 140px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 背景装饰 -->
+  <div class="bg-decoration bg-1">♠</div>
+  <div class="bg-decoration bg-2">♥</div>
+  <div class="bg-decoration bg-3">♦</div>
+  <div class="bg-decoration bg-4">♣</div>
+
+  <!-- Logo -->
+  <img src="canary-logo.png" alt="Canary Bar Logo" class="logo">
+
+  <!-- 标题 -->
+  <h1 class="title">卡纳酒吧德扑赛事</h1>
+  <p class="subtitle">CANARY BAR POKER TOURNAMENTS</p>
+
+  <!-- 按钮 -->
+  <div class="buttons">
+    <a href="championship.html" class="btn">
+      <div class="btn-bg"></div>
+      <div class="btn-icon">🏆</div>
+      <div class="btn-title">巅峰赛</div>
+      <div class="btn-subtitle">CHAMPIONSHIP</div>
+    </a>
+    <a href="invitational.html" class="btn">
+      <div class="btn-bg"></div>
+      <div class="btn-icon">🎯</div>
+      <div class="btn-title">邀请赛</div>
+      <div class="btn-subtitle">INVITATIONAL</div>
+    </a>
+  </div>
+
+  <!-- 底部 -->
+  <div class="footer">
+    <p class="footer-text">TEXAS HOLD'EM TOURNAMENT TIMER</p>
+  </div>
+</body>
+</html>
