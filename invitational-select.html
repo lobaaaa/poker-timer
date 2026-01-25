@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>卡纳酒吧德扑赛事 - Canary Bar Poker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <title>卡纳酒吧邀请赛 - 选择店铺</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -34,29 +33,54 @@
     .bg-3 { bottom: 10%; left: 15%; color: #FF8030; }
     .bg-4 { top: 20%; right: 20%; color: #fff; }
 
+    /* 返回按钮 */
+    .back-btn {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+    .back-btn:hover {
+      color: #FF8030;
+    }
+    .back-btn span {
+      font-size: 24px;
+    }
+
     /* Logo */
     .logo {
-      width: 180px;
-      height: 180px;
-      margin-bottom: 30px;
+      width: 140px;
+      height: 140px;
+      margin-bottom: 25px;
       filter: drop-shadow(0 0 20px rgba(255, 128, 48, 0.3));
     }
 
     /* 标题 */
     .title {
-      font-size: 56px;
+      font-size: 48px;
       font-weight: bold;
       color: #FF8030;
-      letter-spacing: 12px;
+      letter-spacing: 10px;
       margin-bottom: 10px;
       text-shadow: 0 0 30px rgba(255, 128, 48, 0.3);
     }
     .subtitle {
-      font-size: 18px;
+      font-size: 16px;
       color: rgba(255, 255, 255, 0.5);
-      letter-spacing: 8px;
+      letter-spacing: 6px;
       font-family: Arial, sans-serif;
-      margin-bottom: 60px;
+      margin-bottom: 15px;
+    }
+    .select-hint {
+      font-size: 20px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 50px;
     }
 
     /* 按钮容器 */
@@ -73,8 +97,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      width: 280px;
-      height: 200px;
+      width: 300px;
+      height: 180px;
       background: rgba(0, 0, 0, 0.5);
       border: 2px solid rgba(255, 128, 48, 0.3);
       border-radius: 24px;
@@ -103,53 +127,37 @@
     }
 
     .btn-icon {
-      font-size: 50px;
+      font-size: 45px;
       margin-bottom: 15px;
       position: relative;
       z-index: 1;
     }
     .btn-title {
-      font-size: 28px;
+      font-size: 24px;
       font-weight: bold;
       color: #FF8030;
-      letter-spacing: 4px;
+      letter-spacing: 3px;
       margin-bottom: 8px;
       position: relative;
       z-index: 1;
     }
     .btn-subtitle {
-      font-size: 12px;
+      font-size: 14px;
       color: rgba(255, 255, 255, 0.5);
-      letter-spacing: 3px;
-      font-family: Arial, sans-serif;
+      letter-spacing: 2px;
       position: relative;
       z-index: 1;
     }
 
-    /* 底部信息 */
-    .footer {
-      margin-top: 80px;
-      text-align: center;
-    }
-    .footer-text {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.3);
-      letter-spacing: 2px;
-    }
-    .footer-location {
-      font-size: 16px;
-      color: rgba(255, 255, 255, 0.5);
-      margin-top: 10px;
-    }
-
     /* 响应式 */
     @media (max-width: 700px) {
-      .title { font-size: 36px; letter-spacing: 6px; }
-      .subtitle { font-size: 14px; letter-spacing: 4px; }
+      .title { font-size: 32px; letter-spacing: 5px; }
+      .subtitle { font-size: 12px; letter-spacing: 3px; }
       .buttons { gap: 20px; }
-      .btn { width: 240px; height: 170px; }
-      .btn-title { font-size: 24px; }
-      .logo { width: 140px; height: 140px; }
+      .btn { width: 260px; height: 160px; }
+      .btn-title { font-size: 20px; }
+      .logo { width: 110px; height: 110px; }
+      .back-btn { top: 20px; left: 20px; }
     }
   </style>
 </head>
@@ -160,32 +168,33 @@
   <div class="bg-decoration bg-3">♦</div>
   <div class="bg-decoration bg-4">♣</div>
 
+  <!-- 返回按钮 -->
+  <a href="index.html" class="back-btn">
+    <span>←</span> 返回首页
+  </a>
+
   <!-- Logo -->
   <img src="canary-logo.png" alt="Canary Bar Logo" class="logo">
 
   <!-- 标题 -->
-  <h1 class="title">卡纳酒吧德扑赛事</h1>
-  <p class="subtitle">CANARY BAR POKER TOURNAMENTS</p>
+  <h1 class="title">邀请赛</h1>
+  <p class="subtitle">INVITATIONAL</p>
+  <p class="select-hint">请选择比赛店铺</p>
 
   <!-- 按钮 -->
   <div class="buttons">
-    <a href="championship-select.html" class="btn">
+    <a href="invitational.html?room=1" class="btn">
       <div class="btn-bg"></div>
-      <div class="btn-icon">🏆</div>
-      <div class="btn-title">巅峰赛</div>
-      <div class="btn-subtitle">CHAMPIONSHIP</div>
+      <div class="btn-icon">🏢</div>
+      <div class="btn-title">时代天街店</div>
+      <div class="btn-subtitle">TIMES STREET</div>
     </a>
-    <a href="invitational-select.html" class="btn">
+    <a href="invitational.html?room=2" class="btn">
       <div class="btn-bg"></div>
-      <div class="btn-icon">🎯</div>
-      <div class="btn-title">邀请赛</div>
-      <div class="btn-subtitle">INVITATIONAL</div>
+      <div class="btn-icon">🌃</div>
+      <div class="btn-title">九街店</div>
+      <div class="btn-subtitle">JIU JIE</div>
     </a>
-  </div>
-
-  <!-- 底部 -->
-  <div class="footer">
-    <p class="footer-text">TEXAS HOLD'EM TOURNAMENT TIMER</p>
   </div>
 </body>
 </html>

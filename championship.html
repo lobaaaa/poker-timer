@@ -107,19 +107,65 @@
       </div>
     );
 
+    // 获取房间ID
+    const getRoomId = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('room') || '1';
+    };
+
+    const getStorageKey = () => {
+      return `pokerTimerData_championship_room${getRoomId()}`;
+    };
+
     const syncToStorage = (data) => {
-      localStorage.setItem('pokerTimerData', JSON.stringify({ ...data, timestamp: Date.now() }));
+      localStorage.setItem(getStorageKey(), JSON.stringify({ ...data, timestamp: Date.now() }));
     };
 
     const getFromStorage = () => {
-      const data = localStorage.getItem('pokerTimerData');
+      const data = localStorage.getItem(getStorageKey());
       return data ? JSON.parse(data) : null;
+    };
+
+    // 口令配置
+    const PASSWORDS = {
+      '1': '6789',  // 时代天街店口令
+      '2': '9999'   // 九街店口令
     };
 
     function PokerTournamentTimer() {
       const urlParams = new URLSearchParams(window.location.search);
       const isDisplayMode = urlParams.get('mode') === 'display';
+      const roomId = urlParams.get('room') || '1';
       
+      // 口令验证状态
+      const [isAuthenticated, setIsAuthenticated] = useState(false);
+      const [passwordInput, setPasswordInput] = useState('');
+      const [passwordError, setPasswordError] = useState(false);
+
+      // 检查是否已验证（从sessionStorage读取）
+      useEffect(() => {
+        const authKey = `poker_auth_${roomId}`;
+        const isAuth = sessionStorage.getItem(authKey) === 'true';
+        setIsAuthenticated(isAuth);
+      }, [roomId]);
+
+      const handlePasswordSubmit = () => {
+        if (passwordInput === PASSWORDS[roomId]) {
+          const authKey = `poker_auth_${roomId}`;
+          sessionStorage.setItem(authKey, 'true');
+          setIsAuthenticated(true);
+          setPasswordError(false);
+        } else {
+          setPasswordError(true);
+        }
+      };
+
+      const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+          handlePasswordSubmit();
+        }
+      };
+
       const [levels, setLevels] = useState(defaultLevels);
       const [currentLevel, setCurrentLevel] = useState(0);
       const [timeLeft, setTimeLeft] = useState(defaultLevels[0].duration * 60);
@@ -317,7 +363,7 @@
       };
 
       const openDisplayWindow = () => {
-        const url = window.location.href.split('?')[0] + '?mode=display';
+        const url = window.location.href.split('?')[0] + '?room=' + roomId + '&mode=display';
         window.open(url, 'PokerTimerDisplay', 'width=1920,height=1080');
       };
 
@@ -333,6 +379,58 @@
       const controlButtonStyle = { background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', color: '#e0e0e0', padding: '15px 20px', cursor: 'pointer', fontSize: '18px', letterSpacing: '2px', transition: 'all 0.3s ease', fontFamily: "'Bebas Neue', 'Arial Black', sans-serif", textAlign: 'center', borderRadius: '16px', width: '130px' };
       const buttonSubtextStyle = { fontSize: '10px', opacity: 0.5, fontFamily: 'Arial, sans-serif', marginTop: '2px' };
       const headerSubStyle = { fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', fontWeight: 'normal', marginTop: '2px' };
+
+      // 口令验证界面
+      if (!isAuthenticated) {
+        return (
+          <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: '"Microsoft YaHei", "PingFang SC", sans-serif' }}>
+            <img src="canary-logo.png" alt="Logo" style={{ width: '120px', height: '120px', marginBottom: '30px', filter: 'drop-shadow(0 0 20px rgba(255, 128, 48, 0.3))' }} />
+            <h1 style={{ color: '#FF8030', fontSize: '36px', letterSpacing: '8px', marginBottom: '10px' }}>卡纳酒吧巅峰赛</h1>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', marginBottom: '40px' }}>{roomId === '1' ? '时代天街店' : '九街店'}</p>
+            <div style={{ background: 'rgba(0,0,0,0.5)', padding: '40px', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.3)', textAlign: 'center' }}>
+              <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '20px', fontSize: '16px' }}>请输入口令</p>
+              <input 
+                type="password" 
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="输入口令..."
+                style={{ 
+                  background: 'rgba(255,255,255,0.1)', 
+                  border: passwordError ? '2px solid #e05555' : '1px solid rgba(255,128,48,0.3)', 
+                  color: '#e0e0e0', 
+                  padding: '15px 20px', 
+                  fontSize: '18px', 
+                  width: '250px', 
+                  textAlign: 'center', 
+                  borderRadius: '12px',
+                  outline: 'none'
+                }} 
+              />
+              {passwordError && <p style={{ color: '#e05555', marginTop: '15px', fontSize: '14px' }}>口令错误，请重试</p>}
+              <button 
+                onClick={handlePasswordSubmit}
+                style={{ 
+                  display: 'block',
+                  width: '250px',
+                  marginTop: '20px', 
+                  padding: '15px 40px', 
+                  background: '#FF8030', 
+                  border: 'none', 
+                  color: '#fff', 
+                  fontSize: '18px', 
+                  borderRadius: '12px', 
+                  cursor: 'pointer',
+                  letterSpacing: '3px'
+                }}
+              >
+                进入
+              </button>
+            </div>
+            <a href="championship-select.html" style={{ color: 'rgba(255,255,255,0.4)', marginTop: '30px', textDecoration: 'none', fontSize: '14px' }}>← 返回选择店铺</a>
+          </div>
+        );
+      }
 
       return (
         <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%)', fontFamily: "'Bebas Neue', 'Arial Black', sans-serif", color: '#e0e0e0', position: 'relative', overflow: 'hidden' }}>
@@ -375,7 +473,7 @@
               <img src="canary-logo.png" alt="Canary Bar Logo" style={{ height: isDisplayMode ? '70px' : '100px', width: 'auto', objectFit: 'contain' }} />
               <div>
                 <h1 style={{ margin: 0, fontSize: isDisplayMode ? '28px' : '36px', letterSpacing: '8px', color: '#FF8030', fontFamily: '"Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif', fontWeight: '600' }}>卡纳酒吧巅峰赛</h1>
-                <p style={{ margin: '5px 0 0 0', fontSize: isDisplayMode ? '10px' : '12px', letterSpacing: '3px', color: 'rgba(255,255,255,0.5)', fontFamily: 'Arial, sans-serif' }}>CANARY BAR CHAMPIONSHIP</p>
+                <p style={{ margin: '5px 0 0 0', fontSize: isDisplayMode ? '10px' : '12px', letterSpacing: '3px', color: 'rgba(255,255,255,0.5)', fontFamily: 'Arial, sans-serif' }}>CANARY BAR CHAMPIONSHIP · {roomId === '1' ? '时代天街店' : '九街店'}</p>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
