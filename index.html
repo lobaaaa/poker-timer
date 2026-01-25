@@ -328,19 +328,19 @@
           </audio>
 
           {/* Header */}
-          <div style={{ padding: '20px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,128,48,0.3)', position: 'relative', zIndex: 10, background: 'rgba(26, 26, 26, 0.95)' }}>
+          <div style={{ padding: isDisplayMode ? '12px 30px' : '20px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,128,48,0.3)', position: 'relative', zIndex: 10, background: 'rgba(26, 26, 26, 0.95)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <img src="canary-logo.png" alt="Canary Bar Logo" style={{ height: '100px', width: 'auto', objectFit: 'contain' }} />
+              <img src="canary-logo.png" alt="Canary Bar Logo" style={{ height: isDisplayMode ? '70px' : '100px', width: 'auto', objectFit: 'contain' }} />
               <div>
-                <h1 style={{ margin: 0, fontSize: '36px', letterSpacing: '8px', color: '#FF8030', fontFamily: '"Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif', fontWeight: '600' }}>卡纳酒吧巅峰赛</h1>
-                <p style={{ margin: '5px 0 0 0', fontSize: '12px', letterSpacing: '3px', color: 'rgba(255,255,255,0.5)', fontFamily: 'Arial, sans-serif' }}>CANARY BAR CHAMPIONSHIP</p>
+                <h1 style={{ margin: 0, fontSize: isDisplayMode ? '28px' : '36px', letterSpacing: '8px', color: '#FF8030', fontFamily: '"Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif', fontWeight: '600' }}>卡纳酒吧巅峰赛</h1>
+                <p style={{ margin: '5px 0 0 0', fontSize: isDisplayMode ? '10px' : '12px', letterSpacing: '3px', color: 'rgba(255,255,255,0.5)', fontFamily: 'Arial, sans-serif' }}>CANARY BAR CHAMPIONSHIP</p>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.3)', padding: '12px 20px', borderRadius: '12px', border: '1px solid rgba(255,128,48,0.2)' }}>
-                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', letterSpacing: '2px', marginBottom: '4px' }}>北京时间 <span style={{ fontFamily: 'Arial, sans-serif', fontSize: '10px' }}>BEIJING TIME</span></div>
-                <div style={{ fontSize: '28px', color: '#FF8030', letterSpacing: '2px', fontFamily: "'Bebas Neue', sans-serif" }}>{formatBeijingTime()}</div>
-                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '2px' }}>{formatBeijingDate()}</div>
+              <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.3)', padding: isDisplayMode ? '8px 15px' : '12px 20px', borderRadius: '12px', border: '1px solid rgba(255,128,48,0.2)' }}>
+                <div style={{ fontSize: isDisplayMode ? '10px' : '12px', color: 'rgba(255,255,255,0.5)', letterSpacing: '2px', marginBottom: '4px' }}>北京时间 <span style={{ fontFamily: 'Arial, sans-serif', fontSize: isDisplayMode ? '8px' : '10px' }}>BEIJING TIME</span></div>
+                <div style={{ fontSize: isDisplayMode ? '22px' : '28px', color: '#FF8030', letterSpacing: '2px', fontFamily: "'Bebas Neue', sans-serif" }}>{formatBeijingTime()}</div>
+                <div style={{ fontSize: isDisplayMode ? '10px' : '12px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '2px' }}>{formatBeijingDate()}</div>
               </div>
             </div>
           </div>
@@ -438,19 +438,19 @@
               </div>
             </div>
           ) : (
-            <div style={{ display: 'flex', padding: '20px 30px', minHeight: isDisplayMode ? 'calc(100vh - 160px)' : 'calc(100vh - 250px)', position: 'relative', zIndex: 10, gap: '25px' }}>
+            <div style={{ display: 'flex', padding: isDisplayMode ? '15px 25px' : '20px 30px', height: isDisplayMode ? 'calc(100vh - 140px)' : 'auto', minHeight: isDisplayMode ? 'auto' : 'calc(100vh - 250px)', position: 'relative', zIndex: 10, gap: '20px', overflow: 'hidden' }}>
               
               {/* 左侧盲注级别列表 */}
-              <div style={{ width: '220px', background: 'rgba(0,0,0,0.4)', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.3)', padding: '20px', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ textAlign: 'center', marginBottom: '15px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,128,48,0.2)' }}>
-                  <div style={{ fontSize: '18px', color: '#FF8030', letterSpacing: '3px', fontWeight: 'bold' }}>盲注级别</div>
-                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '4px' }}>BLIND LEVELS</div>
+              <div style={{ width: isDisplayMode ? '240px' : '280px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.3)', padding: isDisplayMode ? '15px' : '25px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div style={{ textAlign: 'center', marginBottom: isDisplayMode ? '10px' : '18px', paddingBottom: isDisplayMode ? '8px' : '15px', borderBottom: '1px solid rgba(255,128,48,0.2)', flexShrink: 0 }}>
+                  <div style={{ fontSize: isDisplayMode ? '20px' : '24px', color: '#FF8030', letterSpacing: '4px', fontWeight: 'bold' }}>盲注级别</div>
+                  <div style={{ fontSize: isDisplayMode ? '10px' : '13px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '4px' }}>BLIND LEVELS</div>
                 </div>
-                <div style={{ flex: 1, overflowY: 'auto' }}>
+                <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
                   {levels.map((level, index) => (
                     <div key={index} style={{ 
-                      padding: '10px 12px', 
-                      marginBottom: '6px',
+                      padding: isDisplayMode ? '8px 10px' : '14px 16px', 
+                      marginBottom: isDisplayMode ? '4px' : '8px',
                       background: index === currentLevel ? 'rgba(255,128,48,0.25)' : index < currentLevel ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.05)',
                       borderRadius: '10px',
                       border: index === currentLevel ? '2px solid #FF8030' : '1px solid rgba(255,255,255,0.05)',
@@ -458,11 +458,11 @@
                       transition: 'all 0.3s ease'
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '14px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.6)', fontWeight: index === currentLevel ? 'bold' : 'normal' }}>L{index + 1}</span>
-                        <span style={{ fontSize: '16px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.8)', fontWeight: 'bold' }}>{level.smallBlind}/{level.bigBlind}</span>
+                        <span style={{ fontSize: isDisplayMode ? '14px' : '18px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.6)', fontWeight: index === currentLevel ? 'bold' : 'normal' }}>L{index + 1}</span>
+                        <span style={{ fontSize: isDisplayMode ? '16px' : '22px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.8)', fontWeight: 'bold' }}>{level.smallBlind}/{level.bigBlind}</span>
                       </div>
                       {level.ante > 0 && (
-                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', textAlign: 'right', marginTop: '2px' }}>前注 {level.ante}</div>
+                        <div style={{ fontSize: isDisplayMode ? '10px' : '14px', color: 'rgba(255,255,255,0.4)', textAlign: 'right', marginTop: '2px' }}>前注 {level.ante}</div>
                       )}
                     </div>
                   ))}
@@ -470,93 +470,93 @@
               </div>
 
               {/* 中间主内容区 */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-                  <div style={{ fontSize: '48px', letterSpacing: '10px', color: 'rgba(255,255,255,0.85)' }}>第 {currentLevel + 1} 级 / 共 {levels.length} 级</div>
-                  <div style={{ fontSize: '20px', letterSpacing: '5px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '10px' }}>LEVEL {currentLevel + 1} OF {levels.length}</div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                <div style={{ textAlign: 'center', marginBottom: isDisplayMode ? '10px' : '20px' }}>
+                  <div style={{ fontSize: isDisplayMode ? '36px' : '48px', letterSpacing: '10px', color: 'rgba(255,255,255,0.85)' }}>第 {currentLevel + 1} 级 / 共 {levels.length} 级</div>
+                  <div style={{ fontSize: isDisplayMode ? '14px' : '20px', letterSpacing: '5px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '6px' }}>LEVEL {currentLevel + 1} OF {levels.length}</div>
                 </div>
 
-                <div style={{ width: '90%', maxWidth: '750px', height: '10px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: '30px', borderRadius: '10px' }}>
+                <div style={{ width: '90%', maxWidth: '650px', height: '8px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: isDisplayMode ? '15px' : '30px', borderRadius: '10px' }}>
                   <div style={{ width: `${progress}%`, height: '100%', background: isLowTime ? '#e05555' : '#FF8030', transition: 'width 1s linear', opacity: 0.9 }} />
                 </div>
 
-                <div style={{ background: 'rgba(0,0,0,0.5)', padding: '35px 80px', marginBottom: '35px', borderRadius: '28px', border: '2px solid rgba(255,128,48,0.3)', minWidth: '500px', textAlign: 'center', position: 'relative' }}>
+                <div style={{ background: 'rgba(0,0,0,0.5)', padding: isDisplayMode ? '15px 40px' : '35px 80px', marginBottom: isDisplayMode ? '12px' : '35px', borderRadius: '24px', border: '2px solid rgba(255,128,48,0.3)', textAlign: 'center', position: 'relative' }}>
                   {!isRunning && timeLeft > 0 && timeLeft < current.duration * 60 && (
-                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.95)', padding: '45px 90px', borderRadius: '28px', border: '3px solid #FF8030', zIndex: 20 }}>
-                      <div style={{ fontSize: '64px', color: '#FF8030', letterSpacing: '14px', marginBottom: '12px' }}>比赛暂停</div>
-                      <div style={{ fontSize: '22px', color: 'rgba(255,255,255,0.5)', letterSpacing: '8px', fontFamily: 'Arial, sans-serif' }}>GAME PAUSED</div>
+                    <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(0,0,0,0.95)', padding: isDisplayMode ? '30px 60px' : '45px 90px', borderRadius: '28px', border: '3px solid #FF8030', zIndex: 20 }}>
+                      <div style={{ fontSize: isDisplayMode ? '48px' : '64px', color: '#FF8030', letterSpacing: '14px', marginBottom: '12px' }}>比赛暂停</div>
+                      <div style={{ fontSize: isDisplayMode ? '16px' : '22px', color: 'rgba(255,255,255,0.5)', letterSpacing: '8px', fontFamily: 'Arial, sans-serif' }}>GAME PAUSED</div>
                     </div>
                   )}
-                  <div style={{ fontSize: 'clamp(100px, 18vw, 180px)', fontWeight: 'bold', letterSpacing: '20px', color: isLowTime ? '#e05555' : '#FF8030', textShadow: isLowTime ? '0 0 40px rgba(224, 85, 85, 0.5)' : '0 0 30px rgba(255, 128, 48, 0.4)' }}>{formatTime(timeLeft)}</div>
+                  <div style={{ fontSize: isDisplayMode ? 'clamp(120px, 20vw, 200px)' : 'clamp(100px, 18vw, 180px)', fontWeight: 'bold', letterSpacing: '25px', color: isLowTime ? '#e05555' : '#FF8030', textShadow: isLowTime ? '0 0 50px rgba(224, 85, 85, 0.6)' : '0 0 40px rgba(255, 128, 48, 0.5)' }}>{formatTime(timeLeft)}</div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '20px', marginBottom: '25px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: '20px 18px', width: '150px', borderRadius: '18px', border: '1px solid rgba(255,128,48,0.25)' }}>
-                    <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '3px' }}>小盲</div>
-                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '10px' }}>SMALL BLIND</div>
-                    <div style={{ fontSize: '44px', color: '#FF8030', fontWeight: 'bold' }}>{current.smallBlind}</div>
+                <div style={{ display: 'flex', gap: isDisplayMode ? '12px' : '20px', marginBottom: isDisplayMode ? '12px' : '25px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '12px 10px' : '20px 18px', width: isDisplayMode ? '120px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                    <div style={{ fontSize: isDisplayMode ? '12px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>小盲</div>
+                    <div style={{ fontSize: isDisplayMode ? '8px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '4px' : '10px' }}>SMALL BLIND</div>
+                    <div style={{ fontSize: isDisplayMode ? '32px' : '44px', color: '#FF8030', fontWeight: 'bold' }}>{current.smallBlind}</div>
                   </div>
-                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: '20px 18px', width: '150px', borderRadius: '18px', border: '1px solid rgba(255,128,48,0.25)' }}>
-                    <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '3px' }}>大盲</div>
-                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '10px' }}>BIG BLIND</div>
-                    <div style={{ fontSize: '44px', color: '#FF8030', fontWeight: 'bold' }}>{current.bigBlind}</div>
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '12px 10px' : '20px 18px', width: isDisplayMode ? '120px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                    <div style={{ fontSize: isDisplayMode ? '12px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>大盲</div>
+                    <div style={{ fontSize: isDisplayMode ? '8px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '4px' : '10px' }}>BIG BLIND</div>
+                    <div style={{ fontSize: isDisplayMode ? '32px' : '44px', color: '#FF8030', fontWeight: 'bold' }}>{current.bigBlind}</div>
                   </div>
                   {current.ante > 0 && (
-                    <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: '20px 18px', width: '150px', borderRadius: '18px', border: '1px solid rgba(255,128,48,0.25)' }}>
-                      <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '3px' }}>前注</div>
-                      <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '10px' }}>ANTE</div>
-                      <div style={{ fontSize: '44px', color: '#FF8030', fontWeight: 'bold' }}>{current.ante}</div>
+                    <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '12px 10px' : '20px 18px', width: isDisplayMode ? '120px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                      <div style={{ fontSize: isDisplayMode ? '12px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>前注</div>
+                      <div style={{ fontSize: isDisplayMode ? '8px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '4px' : '10px' }}>ANTE</div>
+                      <div style={{ fontSize: isDisplayMode ? '32px' : '44px', color: '#FF8030', fontWeight: 'bold' }}>{current.ante}</div>
                     </div>
                   )}
-                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: '20px 18px', width: '150px', borderRadius: '18px', border: '1px solid rgba(255,128,48,0.25)' }}>
-                    <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '3px' }}>参赛</div>
-                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '10px' }}>PLAYERS</div>
-                    <div style={{ fontSize: '44px', color: '#FF8030', fontWeight: 'bold' }}>{remainingPlayers}<span style={{ fontSize: '22px', color: 'rgba(255,255,255,0.4)' }}>/{totalPlayers}</span></div>
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '12px 10px' : '20px 18px', width: isDisplayMode ? '120px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                    <div style={{ fontSize: isDisplayMode ? '12px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>参赛</div>
+                    <div style={{ fontSize: isDisplayMode ? '8px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '4px' : '10px' }}>PLAYERS</div>
+                    <div style={{ fontSize: isDisplayMode ? '32px' : '44px', color: '#FF8030', fontWeight: 'bold' }}>{remainingPlayers}<span style={{ fontSize: isDisplayMode ? '16px' : '22px', color: 'rgba(255,255,255,0.4)' }}>/{totalPlayers}</span></div>
                   </div>
-                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: '20px 18px', width: '150px', borderRadius: '18px', border: '1px solid rgba(255,128,48,0.25)' }}>
-                    <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '3px' }}>均码</div>
-                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '10px' }}>AVG CHIPS</div>
-                    <div style={{ fontSize: '32px', color: '#FF8030', fontWeight: 'bold' }}>{averageChips.toLocaleString()}</div>
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '12px 10px' : '20px 18px', width: isDisplayMode ? '120px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                    <div style={{ fontSize: isDisplayMode ? '12px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>均码</div>
+                    <div style={{ fontSize: isDisplayMode ? '8px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '4px' : '10px' }}>AVG CHIPS</div>
+                    <div style={{ fontSize: isDisplayMode ? '24px' : '32px', color: '#FF8030', fontWeight: 'bold' }}>{averageChips.toLocaleString()}</div>
                   </div>
-                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: '20px 18px', width: '150px', borderRadius: '18px', border: '1px solid rgba(255,128,48,0.25)' }}>
-                    <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '3px' }}>总码</div>
-                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: '10px' }}>TOTAL</div>
-                    <div style={{ fontSize: '32px', color: '#FF8030', fontWeight: 'bold' }}>{totalChips.toLocaleString()}</div>
+                  <div style={{ textAlign: 'center', background: 'rgba(0,0,0,0.45)', padding: isDisplayMode ? '12px 10px' : '20px 18px', width: isDisplayMode ? '120px' : '150px', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.25)' }}>
+                    <div style={{ fontSize: isDisplayMode ? '12px' : '15px', color: 'rgba(255,255,255,0.65)', letterSpacing: '2px', marginBottom: '2px' }}>总码</div>
+                    <div style={{ fontSize: isDisplayMode ? '8px' : '10px', color: 'rgba(255,255,255,0.35)', letterSpacing: '2px', fontFamily: 'Arial, sans-serif', marginBottom: isDisplayMode ? '4px' : '10px' }}>TOTAL</div>
+                    <div style={{ fontSize: isDisplayMode ? '24px' : '32px', color: '#FF8030', fontWeight: 'bold' }}>{totalChips.toLocaleString()}</div>
                   </div>
                 </div>
 
                 {next && (
-                  <div style={{ background: 'rgba(0,0,0,0.4)', padding: '14px 40px', border: '1px solid rgba(255,128,48,0.2)', textAlign: 'center', borderRadius: '14px', minWidth: '350px' }}>
-                    <div style={{ fontSize: '15px', color: 'rgba(255,255,255,0.5)', letterSpacing: '3px' }}>下一级 <span style={{ fontSize: '11px', fontFamily: 'Arial, sans-serif' }}>NEXT LEVEL</span></div>
-                    <span style={{ fontSize: '26px', color: 'rgba(255,128,48,0.85)', letterSpacing: '4px' }}>{next.smallBlind} / {next.bigBlind}{next.ante > 0 && ` (前注 ${next.ante})`}</span>
+                  <div style={{ background: 'rgba(0,0,0,0.4)', padding: isDisplayMode ? '10px 30px' : '14px 40px', border: '1px solid rgba(255,128,48,0.2)', textAlign: 'center', borderRadius: '14px' }}>
+                    <div style={{ fontSize: isDisplayMode ? '12px' : '15px', color: 'rgba(255,255,255,0.5)', letterSpacing: '3px' }}>下一级 <span style={{ fontSize: isDisplayMode ? '9px' : '11px', fontFamily: 'Arial, sans-serif' }}>NEXT LEVEL</span></div>
+                    <span style={{ fontSize: isDisplayMode ? '20px' : '26px', color: 'rgba(255,128,48,0.85)', letterSpacing: '4px' }}>{next.smallBlind} / {next.bigBlind}{next.ante > 0 && ` (前注 ${next.ante})`}</span>
                   </div>
                 )}
               </div>
 
               {/* 右侧奖金分配区 */}
-              <div style={{ width: '220px', background: 'rgba(0,0,0,0.4)', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.3)', padding: '20px', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ textAlign: 'center', marginBottom: '15px', paddingBottom: '12px', borderBottom: '1px solid rgba(255,128,48,0.2)' }}>
-                  <div style={{ fontSize: '18px', color: '#FF8030', letterSpacing: '3px', fontWeight: 'bold' }}>奖金分配</div>
-                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '4px' }}>PRIZE POOL</div>
-                  <div style={{ fontSize: '28px', color: '#FF8030', marginTop: '10px', fontWeight: 'bold' }}>{totalChips.toLocaleString()}</div>
+              <div style={{ width: isDisplayMode ? '200px' : '220px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.3)', padding: isDisplayMode ? '15px' : '20px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div style={{ textAlign: 'center', marginBottom: isDisplayMode ? '10px' : '15px', paddingBottom: isDisplayMode ? '8px' : '12px', borderBottom: '1px solid rgba(255,128,48,0.2)', flexShrink: 0 }}>
+                  <div style={{ fontSize: isDisplayMode ? '16px' : '18px', color: '#FF8030', letterSpacing: '3px', fontWeight: 'bold' }}>奖金分配</div>
+                  <div style={{ fontSize: isDisplayMode ? '9px' : '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '4px' }}>PRIZE POOL</div>
+                  <div style={{ fontSize: isDisplayMode ? '22px' : '28px', color: '#FF8030', marginTop: '8px', fontWeight: 'bold' }}>{totalChips.toLocaleString()}</div>
                 </div>
-                <div style={{ flex: 1, overflowY: 'auto' }}>
+                <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
                   {prizeStructure.map((prize, index) => (
                     <div key={index} style={{ 
                       display: 'flex', 
                       justifyContent: 'space-between', 
                       alignItems: 'center', 
-                      padding: '12px 10px', 
-                      marginBottom: '8px',
+                      padding: isDisplayMode ? '8px 8px' : '12px 10px', 
+                      marginBottom: isDisplayMode ? '5px' : '8px',
                       background: index === 0 ? 'rgba(255,128,48,0.15)' : index === 1 ? 'rgba(255,128,48,0.08)' : 'rgba(255,255,255,0.03)',
                       borderRadius: '10px',
                       border: index === 0 ? '1px solid rgba(255,128,48,0.4)' : '1px solid rgba(255,255,255,0.05)'
                     }}>
                       <div>
-                        <div style={{ fontSize: '16px', color: index === 0 ? '#FF8030' : 'rgba(255,255,255,0.8)', fontWeight: index < 3 ? 'bold' : 'normal' }}>第{prize.place}名</div>
-                        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>{prize.percent}%</div>
+                        <div style={{ fontSize: isDisplayMode ? '13px' : '16px', color: index === 0 ? '#FF8030' : 'rgba(255,255,255,0.8)', fontWeight: index < 3 ? 'bold' : 'normal' }}>第{prize.place}名</div>
+                        <div style={{ fontSize: isDisplayMode ? '9px' : '11px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>{prize.percent}%</div>
                       </div>
-                      <div style={{ fontSize: '22px', color: index === 0 ? '#FF8030' : 'rgba(255,255,255,0.9)', fontWeight: 'bold' }}>{Math.round(totalChips * prize.percent / 100).toLocaleString()}</div>
+                      <div style={{ fontSize: isDisplayMode ? '16px' : '22px', color: index === 0 ? '#FF8030' : 'rgba(255,255,255,0.9)', fontWeight: 'bold' }}>{Math.round(totalChips * prize.percent / 100).toLocaleString()}</div>
                     </div>
                   ))}
                 </div>
