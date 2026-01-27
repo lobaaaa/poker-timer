@@ -238,18 +238,6 @@
       const formatBeijingTime = () => currentTime.toLocaleTimeString('zh-CN', { timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
       const formatBeijingDate = () => currentTime.toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai', month: '2-digit', day: '2-digit', weekday: 'short' });
 
-      // 语音提示函数
-      const speakText = (text) => {
-        if ('speechSynthesis' in window) {
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.lang = 'zh-CN';
-          utterance.rate = 0.9;
-          utterance.pitch = 1;
-          utterance.volume = 1;
-          window.speechSynthesis.speak(utterance);
-        }
-      };
-
       useEffect(() => {
         if (isDisplayMode) return;
         let interval = null;
@@ -257,8 +245,6 @@
           interval = setInterval(() => setTimeLeft((time) => time - 1), 1000);
         } else if (timeLeft === 0 && isRunning) {
           if (audioRef.current) audioRef.current.play().catch(() => {});
-          // 语音提示盲注升级
-          speakText('盲注升级');
           
           if (currentLevel < levels.length - 1) {
             const nextLevel = levels[currentLevel + 1];
