@@ -589,8 +589,8 @@
                 <div style={{ flex: 1, overflowY: isDisplayMode ? 'hidden' : 'auto', overflowX: 'hidden' }}>
                   {levels.map((level, index) => (
                     <div key={index} style={{ 
-                      padding: isDisplayMode ? '6px 10px' : '14px 16px', 
-                      marginBottom: isDisplayMode ? '3px' : '8px',
+                      padding: isDisplayMode ? '5px 10px' : '14px 16px', 
+                      marginBottom: isDisplayMode ? '2px' : '8px',
                       background: index === currentLevel ? 'rgba(255,128,48,0.25)' : index < currentLevel ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.05)',
                       borderRadius: isDisplayMode ? '8px' : '10px',
                       border: index === currentLevel ? '2px solid #FF8030' : '1px solid rgba(255,255,255,0.05)',
@@ -598,11 +598,11 @@
                       transition: 'all 0.3s ease'
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: isDisplayMode ? '14px' : '22px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.6)', fontWeight: index === currentLevel ? 'bold' : 'normal' }}>L{index + 1}</span>
-                        <span style={{ fontSize: isDisplayMode ? '16px' : '28px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.8)', fontWeight: 'bold' }}>{level.smallBlind}/{level.bigBlind}</span>
+                        <span style={{ fontSize: isDisplayMode ? '16px' : '22px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.6)', fontWeight: index === currentLevel ? 'bold' : 'normal' }}>L{index + 1}</span>
+                        <span style={{ fontSize: isDisplayMode ? '20px' : '28px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.8)', fontWeight: 'bold' }}>{level.smallBlind}/{level.bigBlind}</span>
                       </div>
                       {level.ante > 0 && (
-                        <div style={{ fontSize: isDisplayMode ? '11px' : '18px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.5)', textAlign: 'right', marginTop: isDisplayMode ? '2px' : '4px' }}>前注 {level.ante}</div>
+                        <div style={{ fontSize: isDisplayMode ? '13px' : '18px', color: index === currentLevel ? '#FF8030' : 'rgba(255,255,255,0.5)', textAlign: 'right', marginTop: isDisplayMode ? '1px' : '4px' }}>前注 {level.ante}</div>
                       )}
                     </div>
                   ))}
@@ -693,31 +693,59 @@
               </div>
 
               {/* 右侧奖金分配区 */}
-              <div style={{ width: isDisplayMode ? '200px' : '220px', background: 'rgba(0,0,0,0.4)', borderRadius: '16px', border: '1px solid rgba(255,128,48,0.3)', padding: isDisplayMode ? '15px' : '20px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                <div style={{ textAlign: 'center', marginBottom: isDisplayMode ? '10px' : '15px', paddingBottom: isDisplayMode ? '8px' : '12px', borderBottom: '1px solid rgba(255,128,48,0.2)', flexShrink: 0 }}>
-                  <div style={{ fontSize: isDisplayMode ? '16px' : '18px', color: '#FF8030', letterSpacing: '3px', fontWeight: 'bold' }}>奖金分配</div>
-                  <div style={{ fontSize: isDisplayMode ? '9px' : '11px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '4px' }}>PRIZE POOL</div>
-                  <div style={{ fontSize: isDisplayMode ? '22px' : '28px', color: '#FF8030', marginTop: '8px', fontWeight: 'bold' }}>{totalChips.toLocaleString()}</div>
+              <div style={{ width: isDisplayMode ? '240px' : '260px', background: 'rgba(0,0,0,0.4)', borderRadius: '20px', border: '1px solid rgba(255,128,48,0.3)', padding: isDisplayMode ? '15px' : '20px', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div style={{ textAlign: 'center', marginBottom: isDisplayMode ? '12px' : '15px', paddingBottom: isDisplayMode ? '10px' : '12px', borderBottom: '1px solid rgba(255,128,48,0.2)', flexShrink: 0 }}>
+                  <div style={{ fontSize: isDisplayMode ? '18px' : '20px', color: '#FF8030', letterSpacing: '4px', fontWeight: 'bold' }}>奖金分配</div>
+                  <div style={{ fontSize: isDisplayMode ? '10px' : '12px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '4px' }}>PRIZE POOL</div>
+                  <div style={{ fontSize: isDisplayMode ? '26px' : '32px', color: '#FF8030', marginTop: '10px', fontWeight: 'bold', textShadow: '0 0 20px rgba(255,128,48,0.3)' }}>{totalChips.toLocaleString()}</div>
                 </div>
-                <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-                  {prizeStructure.map((prize, index) => (
-                    <div key={index} style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center', 
-                      padding: isDisplayMode ? '8px 8px' : '12px 10px', 
-                      marginBottom: isDisplayMode ? '5px' : '8px',
-                      background: index === 0 ? 'rgba(255,128,48,0.15)' : index === 1 ? 'rgba(255,128,48,0.08)' : 'rgba(255,255,255,0.03)',
-                      borderRadius: '10px',
-                      border: index === 0 ? '1px solid rgba(255,128,48,0.4)' : '1px solid rgba(255,255,255,0.05)'
-                    }}>
-                      <div>
-                        <div style={{ fontSize: isDisplayMode ? '13px' : '16px', color: index === 0 ? '#FF8030' : 'rgba(255,255,255,0.8)', fontWeight: index < 3 ? 'bold' : 'normal' }}>第{prize.place}名</div>
-                        <div style={{ fontSize: isDisplayMode ? '9px' : '11px', color: 'rgba(255,255,255,0.4)', marginTop: '2px' }}>{prize.percent}%</div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: isDisplayMode ? '10px' : '12px', overflowY: 'auto', overflowX: 'hidden' }}>
+                  {prizeStructure.slice(0, 3).map((prize, index) => {
+                    const medals = ['🥇', '🥈', '🥉'];
+                    const titles = ['冠军', '亚军', '季军'];
+                    const engTitles = ['CHAMPION', '2ND PLACE', '3RD PLACE'];
+                    const bgColors = [
+                      'linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,128,48,0.15) 100%)',
+                      'linear-gradient(135deg, rgba(192,192,192,0.2) 0%, rgba(150,150,150,0.1) 100%)',
+                      'linear-gradient(135deg, rgba(205,127,50,0.2) 0%, rgba(180,100,50,0.1) 100%)'
+                    ];
+                    const borderColors = ['rgba(255,215,0,0.6)', 'rgba(192,192,192,0.5)', 'rgba(205,127,50,0.5)'];
+                    const glowColors = ['rgba(255,215,0,0.3)', 'rgba(192,192,192,0.2)', 'rgba(205,127,50,0.2)'];
+                    
+                    return (
+                      <div key={index} style={{ 
+                        width: '100%',
+                        aspectRatio: '1 / 1',
+                        background: bgColors[index],
+                        borderRadius: '16px',
+                        border: `2px solid ${borderColors[index]}`,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        position: 'relative',
+                        boxShadow: `0 4px 20px ${glowColors[index]}, inset 0 1px 0 rgba(255,255,255,0.1)`,
+                        overflow: 'hidden'
+                      }}>
+                        {/* 装饰角标 */}
+                        <div style={{ position: 'absolute', top: '8px', left: '8px', fontSize: isDisplayMode ? '10px' : '12px', color: 'rgba(255,255,255,0.3)' }}>♠</div>
+                        <div style={{ position: 'absolute', top: '8px', right: '8px', fontSize: isDisplayMode ? '10px' : '12px', color: 'rgba(255,255,255,0.3)' }}>♥</div>
+                        <div style={{ position: 'absolute', bottom: '8px', left: '8px', fontSize: isDisplayMode ? '10px' : '12px', color: 'rgba(255,255,255,0.3)' }}>♦</div>
+                        <div style={{ position: 'absolute', bottom: '8px', right: '8px', fontSize: isDisplayMode ? '10px' : '12px', color: 'rgba(255,255,255,0.3)' }}>♣</div>
+                        
+                        {/* 奖牌 */}
+                        <div style={{ fontSize: isDisplayMode ? '32px' : '40px', marginBottom: '5px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>{medals[index]}</div>
+                        
+                        {/* 名次 */}
+                        <div style={{ fontSize: isDisplayMode ? '18px' : '22px', color: index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32', fontWeight: 'bold', letterSpacing: '3px' }}>{titles[index]}</div>
+                        <div style={{ fontSize: isDisplayMode ? '8px' : '10px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '2px', letterSpacing: '1px' }}>{engTitles[index]}</div>
+                        
+                        {/* 奖金 */}
+                        <div style={{ fontSize: isDisplayMode ? '22px' : '28px', color: '#fff', fontWeight: 'bold', marginTop: '8px', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{Math.round(totalChips * prize.percent / 100).toLocaleString()}</div>
+                        <div style={{ fontSize: isDisplayMode ? '11px' : '13px', color: 'rgba(255,255,255,0.5)', marginTop: '2px' }}>{prize.percent}% 奖池</div>
                       </div>
-                      <div style={{ fontSize: isDisplayMode ? '16px' : '22px', color: index === 0 ? '#FF8030' : 'rgba(255,255,255,0.9)', fontWeight: 'bold' }}>{Math.round(totalChips * prize.percent / 100).toLocaleString()}</div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
