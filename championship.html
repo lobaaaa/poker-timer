@@ -185,10 +185,11 @@
       const [remainingPlayers, setRemainingPlayers] = useState(10);
       const [startingChips, setStartingChips] = useState(3000);
       const [totalChips, setTotalChips] = useState(30000);
+      const [prizeMode, setPrizeMode] = useState('percent'); // 'percent' 或 'custom'
       const [prizeStructure, setPrizeStructure] = useState([
-        { place: 1, percent: 50 },
-        { place: 2, percent: 30 },
-        { place: 3, percent: 20 },
+        { place: 1, percent: 50, customPrize: '' },
+        { place: 2, percent: 30, customPrize: '' },
+        { place: 3, percent: 20, customPrize: '' },
       ]);
       const [showLevelUp, setShowLevelUp] = useState(false);
       const [newLevelInfo, setNewLevelInfo] = useState(null);
@@ -205,11 +206,11 @@
 
       const syncData = () => {
         if (!isDisplayMode) {
-          syncToStorage({ levels, currentLevel, timeLeft, isRunning, totalPlayers, remainingPlayers, startingChips, totalChips, prizeStructure, showLevelUp, newLevelInfo });
+          syncToStorage({ levels, currentLevel, timeLeft, isRunning, totalPlayers, remainingPlayers, startingChips, totalChips, prizeMode, prizeStructure, showLevelUp, newLevelInfo });
         }
       };
 
-      useEffect(() => { syncData(); }, [levels, currentLevel, timeLeft, isRunning, totalPlayers, remainingPlayers, startingChips, totalChips, prizeStructure, showLevelUp, newLevelInfo]);
+      useEffect(() => { syncData(); }, [levels, currentLevel, timeLeft, isRunning, totalPlayers, remainingPlayers, startingChips, totalChips, prizeMode, prizeStructure, showLevelUp, newLevelInfo]);
 
       useEffect(() => {
         if (isDisplayMode) {
@@ -225,6 +226,7 @@
               setRemainingPlayers(data.remainingPlayers);
               setStartingChips(data.startingChips);
               setTotalChips(data.totalChips);
+              if (data.prizeMode !== undefined) setPrizeMode(data.prizeMode);
               if (data.prizeStructure !== undefined) setPrizeStructure(data.prizeStructure);
               if (data.showLevelUp !== undefined) setShowLevelUp(data.showLevelUp);
               if (data.newLevelInfo !== undefined) setNewLevelInfo(data.newLevelInfo);
@@ -506,9 +508,10 @@
               </div>
               
               <div style={{ background: 'rgba(0,0,0,0.3)', padding: '25px', border: '1px solid rgba(255,128,48,0.2)', borderRadius: '16px', marginBottom: '30px' }}>
-                <div style={{ marginBottom: '15px' }}>
+                {/* 奖池分配比例 */}
+                <div style={{ marginBottom: '20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>奖金分配比例 <span style={{ fontSize: '10px', fontFamily: 'Arial, sans-serif' }}>DISTRIBUTION</span></span>
+                    <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>💰 奖池分配比例 <span style={{ fontSize: '10px', fontFamily: 'Arial, sans-serif' }}>DISTRIBUTION</span></span>
                     <span style={{ color: totalPercent > 100 ? '#e05555' : totalPercent === 100 ? '#50a050' : '#FF8030', fontSize: '14px' }}>已分配: {totalPercent}%</span>
                   </div>
                   
@@ -531,6 +534,33 @@
                     <button onClick={handleAddPrizePlace} style={{ background: 'rgba(80,160,80,0.3)', border: '1px solid rgba(80,160,80,0.6)', color: '#50a050', padding: '8px 20px', cursor: 'pointer', fontSize: '14px', borderRadius: '8px' }}>+ 添加名次</button>
                     <button onClick={handleRemovePrizePlace} style={{ background: 'rgba(224,85,85,0.3)', border: '1px solid rgba(224,85,85,0.6)', color: '#e05555', padding: '8px 20px', cursor: 'pointer', fontSize: '14px', borderRadius: '8px' }}>- 减少名次</button>
                   </div>
+                </div>
+
+                {/* 自定义奖品（可选） */}
+                <div style={{ borderTop: '1px solid rgba(255,128,48,0.2)', paddingTop: '20px' }}>
+                  <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', marginBottom: '15px' }}>🎁 额外奖品（可选） <span style={{ fontSize: '10px', fontFamily: 'Arial, sans-serif' }}>BONUS PRIZES</span></div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {['🥇 冠军', '🥈 亚军', '🥉 季军'].map((title, index) => (
+                      <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '15px', background: 'rgba(100,180,255,0.1)', padding: '12px 15px', borderRadius: '10px' }}>
+                        <span style={{ color: '#64b4ff', fontSize: '14px', minWidth: '70px' }}>{title}</span>
+                        <input 
+                          type="text" 
+                          placeholder="如：免费入场券 x3"
+                          value={prizeStructure[index]?.customPrize || ''} 
+                          onChange={(e) => {
+                            const newStructure = [...prizeStructure];
+                            if (newStructure[index]) {
+                              newStructure[index] = { ...newStructure[index], customPrize: e.target.value };
+                              setPrizeStructure(newStructure);
+                            }
+                          }}
+                          style={{ ...inputStyle, flex: 1, minWidth: '200px' }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' }}>提示：如需只显示额外奖品，将奖池比例设为 0%</div>
                 </div>
               </div>
               <div style={{ marginBottom: '30px' }}>
@@ -705,6 +735,7 @@
                     ];
                     const borderColors = ['rgba(255,215,0,0.6)', 'rgba(192,192,192,0.5)', 'rgba(205,127,50,0.5)'];
                     const glowColors = ['rgba(255,215,0,0.3)', 'rgba(192,192,192,0.2)', 'rgba(205,127,50,0.2)'];
+                    const prizeAmount = Math.round(totalChips * prize.percent / 100);
                     
                     return (
                       <div key={index} style={{ 
@@ -728,15 +759,24 @@
                         <div style={{ position: 'absolute', bottom: '8px', right: '8px', fontSize: isDisplayMode ? '10px' : '12px', color: 'rgba(255,255,255,0.3)' }}>♣</div>
                         
                         {/* 奖牌 */}
-                        <div style={{ fontSize: isDisplayMode ? '32px' : '40px', marginBottom: '5px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>{medals[index]}</div>
+                        <div style={{ fontSize: isDisplayMode ? '28px' : '32px', marginBottom: '3px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>{medals[index]}</div>
                         
                         {/* 名次 */}
-                        <div style={{ fontSize: isDisplayMode ? '18px' : '22px', color: index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32', fontWeight: 'bold', letterSpacing: '3px' }}>{titles[index]}</div>
-                        <div style={{ fontSize: isDisplayMode ? '8px' : '10px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '2px', letterSpacing: '1px' }}>{engTitles[index]}</div>
+                        <div style={{ fontSize: isDisplayMode ? '16px' : '18px', color: index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32', fontWeight: 'bold', letterSpacing: '2px' }}>{titles[index]}</div>
+                        <div style={{ fontSize: isDisplayMode ? '7px' : '9px', color: 'rgba(255,255,255,0.4)', fontFamily: 'Arial, sans-serif', marginTop: '1px', letterSpacing: '1px' }}>{engTitles[index]}</div>
                         
-                        {/* 奖金 */}
-                        <div style={{ fontSize: isDisplayMode ? '22px' : '28px', color: '#fff', fontWeight: 'bold', marginTop: '8px', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{Math.round(totalChips * prize.percent / 100).toLocaleString()}</div>
-                        <div style={{ fontSize: isDisplayMode ? '11px' : '13px', color: 'rgba(255,255,255,0.5)', marginTop: '2px' }}>{prize.percent}% 奖池</div>
+                        {/* 奖池金额（当percent > 0时显示） */}
+                        {prize.percent > 0 && (
+                          <>
+                            <div style={{ fontSize: isDisplayMode ? '18px' : '22px', color: '#fff', fontWeight: 'bold', marginTop: '6px', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{prizeAmount.toLocaleString()}</div>
+                            <div style={{ fontSize: isDisplayMode ? '9px' : '11px', color: 'rgba(255,255,255,0.5)', marginTop: '1px' }}>{prize.percent}% 奖池</div>
+                          </>
+                        )}
+                        
+                        {/* 自定义奖品（当有内容时显示） */}
+                        {prize.customPrize && (
+                          <div style={{ fontSize: isDisplayMode ? '14px' : '16px', color: '#64b4ff', fontWeight: 'bold', marginTop: prize.percent > 0 ? '4px' : '8px', textShadow: '0 2px 10px rgba(0,0,0,0.5)', textAlign: 'center', padding: '0 8px' }}>+ {prize.customPrize}</div>
+                        )}
                       </div>
                     );
                   })}
