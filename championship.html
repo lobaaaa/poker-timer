@@ -19,10 +19,13 @@
     const { useState, useEffect, useRef } = React;
 
     const defaultLevels = [
+      { smallBlind: 10, bigBlind: 20, ante: 0, duration: 20 },
       { smallBlind: 50, bigBlind: 100, ante: 0, duration: 20 },
       { smallBlind: 100, bigBlind: 200, ante: 0, duration: 20 },
-      { smallBlind: 150, bigBlind: 300, ante: 0, duration: 20 },
+      { smallBlind: 100, bigBlind: 200, ante: 200, duration: 20 },
+      { smallBlind: 150, bigBlind: 300, ante: 300, duration: 20 },
       { smallBlind: 200, bigBlind: 400, ante: 400, duration: 20 },
+      { smallBlind: 300, bigBlind: 600, ante: 600, duration: 20 },
       { smallBlind: 400, bigBlind: 800, ante: 800, duration: 20 },
       { smallBlind: 500, bigBlind: 1000, ante: 1000, duration: 20 },
       { smallBlind: 700, bigBlind: 1400, ante: 1400, duration: 20 },
@@ -32,6 +35,10 @@
       { smallBlind: 3000, bigBlind: 6000, ante: 6000, duration: 20 },
       { smallBlind: 4000, bigBlind: 8000, ante: 8000, duration: 20 },
       { smallBlind: 5000, bigBlind: 10000, ante: 10000, duration: 20 },
+      { smallBlind: 7000, bigBlind: 14000, ante: 14000, duration: 20 },
+      { smallBlind: 10000, bigBlind: 20000, ante: 20000, duration: 20 },
+      { smallBlind: 15000, bigBlind: 30000, ante: 30000, duration: 20 },
+      { smallBlind: 20000, bigBlind: 40000, ante: 40000, duration: 20 },
     ];
 
     const PokerChip = ({ size = 40 }) => (
@@ -176,8 +183,8 @@
       const [newLevel, setNewLevel] = useState({ smallBlind: '', bigBlind: '', ante: '', duration: '' });
       const [totalPlayers, setTotalPlayers] = useState(10);
       const [remainingPlayers, setRemainingPlayers] = useState(10);
-      const [startingChips, setStartingChips] = useState(20000);
-      const [totalChips, setTotalChips] = useState(200000);
+      const [startingChips, setStartingChips] = useState(3000);
+      const [totalChips, setTotalChips] = useState(30000);
       const [prizeStructure, setPrizeStructure] = useState([
         { place: 1, percent: 50 },
         { place: 2, percent: 30 },
@@ -304,6 +311,7 @@
       };
       const handlePlayerOut = () => { if (remainingPlayers > 1) setRemainingPlayers(remainingPlayers - 1); };
       const handlePlayerBack = () => { setRemainingPlayers(remainingPlayers + 1); setTotalPlayers(Math.max(totalPlayers, remainingPlayers + 1)); };
+      const handleNewPlayer = () => { setTotalPlayers(totalPlayers + 1); setRemainingPlayers(remainingPlayers + 1); setTotalChips(totalChips + startingChips); };
       const handleChipsAdd = () => { setTotalChips(totalChips + startingChips); };
       const handleChipsRemove = () => { if (totalChips > startingChips) setTotalChips(totalChips - startingChips); };
       const averageChips = remainingPlayers > 0 ? Math.round(totalChips / remainingPlayers) : 0;
@@ -747,6 +755,8 @@
                 <div style={{ background: 'rgba(26, 26, 26, 0.98)', borderTop: '1px solid rgba(255,128,48,0.3)', padding: '15px 40px' }}>
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
                     <button onClick={openDisplayWindow} style={{ background: 'rgba(80,160,80,0.3)', border: '2px solid rgba(80,160,80,0.8)', color: '#50a050', padding: '10px 15px', cursor: 'pointer', fontSize: '12px', letterSpacing: '1px', fontFamily: 'inherit', textAlign: 'center', borderRadius: '12px' }}>📺 打开观众窗口<br/><span style={{ fontSize: '9px', opacity: 0.7, fontFamily: 'Arial, sans-serif' }}>OPEN DISPLAY</span></button>
+                    <div style={{ width: '1px', height: '40px', background: 'rgba(255,128,48,0.3)' }} />
+                    <button onClick={handleNewPlayer} style={{ background: 'rgba(100,180,255,0.3)', border: '2px solid rgba(100,180,255,0.8)', color: '#64b4ff', padding: '10px 15px', cursor: 'pointer', fontSize: '12px', letterSpacing: '1px', fontFamily: 'inherit', textAlign: 'center', borderRadius: '12px' }}>➕ 新选手加入<br/><span style={{ fontSize: '9px', opacity: 0.7, fontFamily: 'Arial, sans-serif' }}>NEW PLAYER</span></button>
                     <div style={{ width: '1px', height: '40px', background: 'rgba(255,128,48,0.3)' }} />
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.3)', padding: '8px 15px', borderRadius: '12px' }}>
                       <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', textAlign: 'center' }}>人数<br/><span style={{ fontSize: '9px' }}>PLAYERS</span></span>
